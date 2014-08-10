@@ -1,0 +1,3 @@
+#don_cloud_homepage:
+#    pattern:  /hello/{name}
+#    defaults: { _controller: DONCloudBundle:Default:index }

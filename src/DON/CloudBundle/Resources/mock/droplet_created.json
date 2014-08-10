@@ -1,0 +1,45 @@
+{
+    "id": 2069678,
+    "name": "joyprice.com",
+    "region": {
+        "slug": "sgp1",
+        "name": "Singapore 1",
+        "available": true,
+        "sizes": ["1gb", "512mb", "2gb", "4gb", "8gb", "16gb", "32gb", "48gb", "64gb"],
+        "features": ["virtio", "private_networking", "backups", "ipv6"]
+    },
+    "image": {
+        "id": 376568,
+        "name": "CentOS 6.4 x32",
+        "distribution": "CentOS",
+        "slug": "centos-6-4-x32",
+        "createdAt": "2013-05-28T21:58:58Z",
+        "public": true,
+        "regions": ["nyc1", "ams1", "sfo1", "nyc2", "ams2", "sgp1", "lon1"],
+        "meta": null
+    },
+    "kernel": {
+        "id": 145,
+        "name": "CentOS 6.4 x32 vmlinuz-2.6.32-358.6.2.el6.i686 (145)",
+        "version": "2.6.32-358.6.2.el6.i686",
+        "meta": null
+    },
+    "size": {
+        "slug": "512mb",
+        "memory": 512,
+        "vcpus": 1,
+        "disk": 20,
+        "transfer": 1000,
+        "priceMonthly": "5.0",
+        "priceHourly": "0.00744",
+        "regions": ["nyc1", "sgp1", "ams1", "ams2", "sfo1", "nyc2"]
+    },
+    "locked": true,
+    "createdAt": "2014-07-12T14:20:01Z",
+    "status": "new",
+    "networks": null,
+    "backupIds": [],
+    "snapshotIds": [],
+    "actionIds": [28483006],
+    "meta": null
+}

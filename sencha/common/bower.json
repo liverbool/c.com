@@ -1,0 +1,25 @@
+{
+  "name": "cloud",
+  "version": "0.1.0",
+  "main": "public/javascripts/app.js",
+  "dependencies": {
+    "jquery": "~2.1.1",
+    "semantic-ui": "~0.18.0",
+    "font-awesome": "~4.1.0",
+    "moment": "~2.7.0",
+    "numeral": "~1.5.3",
+    "underscore.string": "~2.3.3"
+  },
+  "devDependencies": {},
+  "overrides": {
+    "semantic-ui": {
+      "main": [
+        "build/packaged/css/semantic.css",
+        "build/packaged/javascript/semantic.js"
+      ]
+    },
+    "underscore.string": {
+      "main": "lib/underscore.string.js"
+    }
+  }
+}

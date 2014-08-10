@@ -1,0 +1,46 @@
+DON\CloudBundle\Entity\Server:
+    constraints:
+    # TODO: If delete server in the same?
+    # eg.
+    # - 1. crate A [TRUE]       no deleted A
+    # - 2. delete A [TRUE]      create deleted A
+    # - 3. crate A [TRUE]       new with deleted A exist
+    # - 4. delete A [FALSE]     flag A to deleted will dupicate wiht #2
+        - Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity:
+            fields: [name, deleted]
+            errorPath: name
+            message: 'This name is already in use.'
+
+    properties:
+        name:
+            - NotBlank:
+                message: don.server.name.blank
+        size:
+            - NotBlank:
+                message: don.server.size.blank
+
+        status:
+            - NotBlank:
+                message: don.server.status.blank
+
+        priceCreate:
+            - NotBlank:
+                message: don.server.price_create.blank
+
+        priceHourly:
+            - NotBlank:
+                message: don.server.price_hourly.blank
+
+        priceMonthly:
+            - NotBlank:
+                message: don.server.price_monthly.blank
+
+DON\CloudBundle\Entity\SSHKey:
+    properties:
+        name:
+            - NotBlank:
+                message: don.sshkey.name.blank
+
+        publicKey:
+            - NotBlank:
+                message: don.sshkey.public_key.blank

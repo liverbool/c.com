@@ -1,0 +1,30 @@
+[
+    {
+        "slug": "sfo1",
+        "name": "San Francisco 1",
+        "available": true,
+        "sizes": ["2gb", "4gb", "8gb", "1gb", "16gb", "32gb", "48gb", "512mb", "64gb"],
+        "features": ["virtio", "backups"]
+    },
+    {
+        "slug": "nyc2",
+        "name": "New York 2",
+        "available": true,
+        "sizes": ["1gb", "2gb", "4gb", "8gb", "16gb", "32gb", "48gb", "64gb", "512mb"],
+        "features": ["virtio", "private_networking", "backups"]
+    },
+    {
+        "slug": "ams2",
+        "name": "Amsterdam 2",
+        "available": true,
+        "sizes": ["512mb", "1gb", "2gb", "4gb", "8gb", "16gb", "32gb", "48gb", "64gb"],
+        "features": ["virtio", "private_networking", "backups"]
+    },
+    {
+        "slug": "sgp1",
+        "name": "Singapore 1",
+        "available": true,
+        "sizes": ["1gb", "512mb", "2gb", "4gb", "8gb", "16gb", "32gb", "48gb", "64gb"],
+        "features": ["virtio", "private_networking", "backups", "ipv6"]
+    }
+]

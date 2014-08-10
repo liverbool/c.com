@@ -1,0 +1,96 @@
+parameters:
+    do.class.adapter: DigitalOceanV2\Adapter\GuzzleAdapter
+    do.class.exception: DigitalOceanV2\Exception\ResponseException
+    do.class.factory: DigitalOceanV2\DigitalOceanV2
+    do.class.api.action: DigitalOceanV2\Api\Action
+    do.class.api.domain: DigitalOceanV2\Api\Domain
+    do.class.api.dns: DigitalOceanV2\Api\DomainRecord
+    do.class.api.image: DigitalOceanV2\Api\Image
+    do.class.api.key: DigitalOceanV2\Api\Key
+    do.class.api.limit: DigitalOceanV2\Api\RateLimit
+    do.class.api.region: DigitalOceanV2\Api\Region
+    do.class.api.size: DigitalOceanV2\Api\Size
+    do.class.api.droplet: DON\CloudBundle\DoApi\Droplet
+    do.class.listener.entity_acl: DON\CloudBundle\EventListener\EntityAclListener
+    do.class.entity.server: DON\CloudBundle\Entity\Server
+    do.class.entity.sshkey: DON\CloudBundle\Entity\SSHKey
+    do.class.repository.server: DON\CloudBundle\Entity\ServerRepository
+    do.class.repository.sshkey: DON\CloudBundle\Entity\SSHKeyRepository
+
+services:
+
+    do.listener.entity_acl:
+        class: %do.class.listener.entity_acl%
+        arguments: [ @service_container ]
+        tags:
+            - { name: doctrine.event_subscriber }
+
+    do.exception:
+        class: %do.class.exception%
+        public: false
+
+    do.adapter:
+        class: %do.class.adapter%
+        public: false
+        arguments: [a3e8d05456f669831deab53ccf22aab4873da7ee54cc7c46de3deb5d88cb68e0, @do.exception]
+
+    do.factory:
+        class: %do.class.factory%
+        arguments: [@do.adapter]
+
+    do.action:
+        class: %do.class.api.action%
+        factory_service: do.factory
+        factory_method: action
+
+    do.domain:
+        class: %do.class.api.domain%
+        factory_service: do.factory
+        factory_method: domain
+
+    do.dns:
+        class: %do.class.api.dns%
+        factory_service: do.factory
+        factory_method: domainRecord
+
+    do.droplet:
+        class: %do.class.api.droplet%
+        factory_service: do.factory
+        factory_method: droplet
+
+    do.image:
+        class: %do.class.api.image%
+        factory_service: do.factory
+        factory_method: image
+
+    do.key:
+        class: %do.class.api.key%
+        factory_service: do.factory
+        factory_method: key
+
+    do.limit:
+        class: %do.class.api.limit%
+        factory_service: do.factory
+        factory_method: rateLimit
+
+    do.region:
+        class: %do.class.api.region%
+        factory_service: do.factory
+        factory_method: region
+
+    do.size:
+        class: %do.class.api.size%
+        factory_service: do.factory
+        factory_method: size
+
+    do.repository.server:
+        class: %do.class.repository.server%
+        factory_service: doctrine.orm.entity_manager
+        factory_method: getRepository
+        arguments: [ %do.class.entity.server% ]
+
+    do.repository.sshkey:
+        class: %do.class.repository.sshkey%
+        factory_service: doctrine.orm.entity_manager
+        factory_method: getRepository
+        arguments: [ %do.class.entity.sshkey% ]

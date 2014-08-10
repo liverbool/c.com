@@ -1,0 +1,64 @@
+
+.item-menu {
+    background-color: #fff;
+
+    @include box-shadow(2px 0 2px rgba(0,0,0,.2));
+
+    .ui.menu,
+    .ui.vertical.menu>.item:last-child {
+        @include border-radius(0 !important)
+    }
+
+    .ui.vertical.menu {
+        width: 100%;
+    }
+}
+
+.x-item-selected {
+    background-color: #eeeeee;
+    cursor: default
+}
+
+// fix  .ui.popup wrong position when body relative (by extjs)
+// https://github.com/Semantic-Org/Semantic-UI/issues/66
+.x-viewport {
+    height: 100%;
+
+    .x-body {
+        height: 100%;
+    }
+
+    .ui.popup {
+        z-index: 90000 !important;
+        min-width: 280px;
+    }
+}
+
+// Step customize
+.ui.steps.no-pointing {
+    @include border-radius(0 !important);
+    @include box-shadow(none);
+
+    .ui.step {
+        @include border-radius(0 !important);
+        padding-left: 1.35em;
+
+        &:after {
+            display: none;
+        }
+
+        &.active {
+            color: #00B5AD;
+            font-weight: bold;
+            background-color: #fff;
+        }
+
+        i.icon {
+            font-size: 1.2em;
+        }
+    }
+
+    .ui.step + .ui.step {
+        border-left: 1px solid #eeeeee !important;
+    }
+}

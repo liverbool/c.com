@@ -1,0 +1,8 @@
+magice_client_user:
+    resource: "@MagiceClientUserBundle/Resources/config/routing.yml"
+    prefix:   /
+
+don_cloud:
+    resource: "@DONCloudBundle/Controller"
+    type: annotation
+    prefix:   /cloud
