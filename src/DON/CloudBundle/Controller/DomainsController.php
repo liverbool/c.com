@@ -2,7 +2,11 @@
 
 namespace DON\CloudBundle\Controller;
 
+use DigitalOceanV2\Exception\ResponseException;
+use DON\CloudBundle\Entity\Domain;
 use Magice\Bundle\RestBundle\Annotation as Rest;
+use Magice\Bundle\RestBundle\Domain\ManagerException;
+use Symfony\Component\HttpFoundation\Request;
 
 class DomainsController extends DigitalController
 {
@@ -17,39 +21,81 @@ class DomainsController extends DigitalController
      */
     public function getAction()
     {
-        //return $this->mock('domains.json');
-        return $this->api()->getAll();
+        $domains = $this->get('do.repository.domain')->findByUser($this->getUser());
+        $domainAll = array();
+
+        foreach ($domains as $domain) {
+            try {
+                $this->api()->getByName($domain->getName());
+                $domainAll[] = $domain;
+            } catch (ResponseException $e) {
+                if ($e->getErrorId() === 'NOT_FOUND') {
+                    $this->getDomainManager()->delete($domain);
+                }
+            }
+        }
+
+        return $domainAll;
     }
 
     /**
      * @Rest\View(statusCode=201)
      * @Rest\Post("domains")
-     * @Rest\Get("domains/create")
      */
-    public function createAction($name, $ipAddress)
+    public function createAction(Request $request)
     {
-        //return $this->mock('domain.json');
-        return $this->api()->create($name, $ipAddress);
+        $name = $request->get('name');
+        $ip = $request->get('ip');
+        $dm = $this->getDomainManager();
+
+        $domain = new Domain();
+        $domain->setName($name);
+        $domain->setIp($ip);
+
+        try {
+            $dm->validate($domain);
+            $this->api()->create($name, $ip);
+            $dm->save();
+
+            return $domain;
+        } catch (ManagerException $e) {
+            return $e->getErrors();
+        } catch (\Exception $e) {
+            throw $e;
+        }
     }
 
     /**
      * @Rest\View()
-     * @Rest\Get("domains/{domain}")
+     * @Rest\Get("domains/{id}", requirements={"id" = "\d+"})
+     * @Rest\Acl({"OWNER", "domain"})
      */
-    public function readAction($domain)
+    public function readAction(Domain $domain)
     {
-        //return $this->mock('domain.json');
-        return $this->api()->getByName($domain);
+        // try to get for throw
+        $this->api()->getByName($domain->getName());
+
+        return $domain;
     }
 
     /**
      * @Rest\View(statusCode=204)
-     * @Rest\Delete("domains/{domain}")
-     * @Rest\Get("domains/{domain}/delete")
+     * @Rest\Delete("domains/{id}", requirements={"id" = "\d+"})
+     * @Rest\Acl({"OWNER", "domain"})
      */
-    public function deleteAction($domain)
+    public function deleteAction(Domain $domain)
     {
-        //return $this->mock('domain.json');
-        $this->api()->delete($domain);
+        $dm = $this->getDomainManager();
+
+        $dm->resource($domain)->begin()->delete();
+
+        try {
+            $this->api()->delete($domain->getName());
+            $dm->commit();
+        } catch (\Exception $e) {
+            $dm->rollback();
+
+            throw $e;
+        }
     }
 }

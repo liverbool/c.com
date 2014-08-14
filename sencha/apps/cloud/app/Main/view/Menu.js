@@ -8,7 +8,7 @@ Ext.define("Magice.Main.view.Menu", {
       autoLoad: true,
       type: 'array',
       fields: ['id', 'label', 'icon'],
-      data: [['info', 'Info', 'basic id'], ['addressing', 'Address', 'basic book'], ['servers', 'Servers', 'desktop'], ['images', 'Images', 'desktop'], ['sshkeys', 'SSH Keys', 'desktop']]
+      data: [['info', 'Info', 'basic id'], ['addressing', 'Address', 'basic book'], ['servers', 'Servers', 'desktop'], ['images', 'Images', 'desktop'], ['sshkeys', 'SSH Keys', 'desktop'], ['domains', 'DNS', 'desktop']]
     },
     listeners: {
       selectionchange: 'onMenuChange'

@@ -3,7 +3,7 @@
  Ext.application(). This is the ideal place to handle application launch and initialization
  details.
 ###
-
+MAGICE_URL = 'http://c.com/web';
 sprintf = _.string.sprintf
 
 Ext.define 'Magice.Application',
@@ -41,7 +41,7 @@ Ext.define 'Magice.Application',
         console.log response.json
 
     statics:
-        URL: 'http://c.com'
+        URL: MAGICE_URL
         path: (path) ->
             Magice.Application.URL + path
 
@@ -57,6 +57,11 @@ Ext.humanize =
     date: (v, format) -> if v then moment(v).format 'll' else ''
     datetime: (v, format) -> if v then moment(v).format 'lll' else ''
     diff: (a, b) -> console.info('this is contrains a bug!'); if !a or !b then null else moment.duration(moment(b).diff(a)).humanize()
+    format: (v, format, input) ->
+        if input is 'mb'
+            v = v * Math.pow(1024, 2)
+
+        numeral(v).format(format)
 
 Ext.util.ObjectId = (val) ->
     if typeof val is 'object' then val.id else null
@@ -88,6 +93,8 @@ Ext.Ajax.on 'beforerequest', (conn, options) ->
     # pass throuth Ext.data.Model#save
     parameters = options.operation.config.parameters if options.operation and options.operation.config
     options.url = Ext.util.bindParameter options.url, parameters if parameters
+
+    console.log arguments
 
     # symfony dev propose
     if !Ext.util.isFullyUrl options.url

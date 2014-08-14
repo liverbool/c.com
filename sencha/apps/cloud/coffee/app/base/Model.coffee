@@ -43,6 +43,21 @@ Ext.define "Magice.base.Model",
         # constructor must return nothing
         return # end constructor
 
+    # if options you can define custom config:
+    #   - confirm                   string to message confirm
+    erase: (options) ->
+        if options and (options.confirm or typeof options is 'string')
+            if options.confirm
+                confirm = options.confirm
+                delete options.confirm
+            else
+                confirm = options
+                options = null
+
+            return unless window.confirm confirm
+
+        @callParent [options]
+
     # if options is component you can define custom config:
     #   - disableErrorMessage       to disable alert message
     #   - preventRejectOnError      to disable reject record when user close UI like window form
@@ -72,7 +87,8 @@ Ext.define "Magice.base.Model",
     saveCallback: (rec, operation, success, comp, form) ->
         comp.setLoading no if comp.isVisible()
 
-        rec.commit() if success and comp.preventCommitOnSuccess isnt yes
+        if success and comp.preventCommitOnSuccess isnt yes
+            rec.commit()
 
         successTitle = @locale.saveCallback.success.title
 
@@ -88,7 +104,7 @@ Ext.define "Magice.base.Model",
             Ext.Msg.success @locale.saveCallback.success
 
         if success and comp.isWindow and comp.closeOnSuccess isnt no
-            comp.close()
+            comp.hide()
 
         @fireEvent 'saved.finish.success', @_phantom, rec, operation, success, comp, form
         @_phantom = no
@@ -107,9 +123,16 @@ Ext.define "Magice.base.Model",
             msg = data.message if data.message
 
             # handle form error
+            errors = null
             if form and data.errors
+                errors = '<div class="ui message warning">'
+                errors = errors + '<ul>'
+
                 for key of data.errors
                     field = form.getForm().findField(key);
+
+                    for error in data.errors[key]
+                        errors += ('<li>' + error + '</li>')
 
                     if field
                         # pass invalid to field's validation
@@ -118,9 +141,12 @@ Ext.define "Magice.base.Model",
                         # mask invalid with new messages
                         field.markInvalid(data.errors[key])
 
+                errors += '</ul></div>'
+
         # custom config to disable this error
         if comp.disableErrorMessage isnt yes
-            Ext.Msg.error title, msg
+            if errors then Ext.Msg.error msg, errors
+            else Ext.Msg.error title, msg
 
         if comp.preventRejectOnError isnt yes and comp.isVisible() is no
             # good idea to reject data if user form is not present (closed)

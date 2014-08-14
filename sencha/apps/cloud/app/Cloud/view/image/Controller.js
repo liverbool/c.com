@@ -65,7 +65,7 @@ Ext.define('Magice.Cloud.view.image.Controller', {
     }
     imagelist = this.lookup('imagelist');
     imagelist.editing.cancelEdit();
-    return imagelist.editing.startEdit(rec, 2);
+    return imagelist.editing.startEdit(rec, 0);
   },
   'on.destroy': function(btn) {
     return this.callAction('on.action.destroyimage', btn);

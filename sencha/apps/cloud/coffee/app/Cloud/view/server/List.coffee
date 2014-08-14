@@ -44,18 +44,18 @@ Ext.define 'Magice.Cloud.view.server.List',
         }
         {
             text: 'Memory' #locale
-            dataIndex: 'size'
-            renderer: (v) -> if v then v.memory + 'MB' else null
+            dataIndex: 'memory'
+            renderer: (v) -> Ext.humanize.format v, '0b', 'mb'
         }
         {
             text: 'SSD Disk' #locale
-            dataIndex: 'size'
-            renderer: (v) -> if v then v.disk + 'GB' else null
+            dataIndex: 'disk'
+            renderer: (v) -> v + 'GB'
         }
         {
             text: 'CPU' #locale
-            dataIndex: 'size'
-            renderer: (v) -> if v and v.slug then v.slug.toUpperCase() else null
+            dataIndex: 'vcpus'
+            renderer: (v) -> v + 'GB'
         }
         {
             hidden: yes
@@ -64,7 +64,7 @@ Ext.define 'Magice.Cloud.view.server.List',
         }
         {
             text: 'Backups' #locale
-            dataIndex: 'isEnableBackups'
+            dataIndex: 'backupsEnabled'
         }
         {
             text: 'Status' #locale

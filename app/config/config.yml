@@ -59,6 +59,17 @@ doctrine:
     orm:
         auto_generate_proxy_classes: "%kernel.debug%"
         auto_mapping: true
+        filters:
+            softdeleteable:
+                class: Gedmo\SoftDeleteable\Filter\SoftDeleteableFilter
+                enabled: true
+
+stof_doctrine_extensions:
+    default_locale: "%locale%"
+    orm:
+        default:
+            softdeleteable: true
+            timestampable: true
 
 # Swiftmailer Configuration
 swiftmailer:
@@ -69,8 +80,8 @@ swiftmailer:
     spool:     { type: memory }
 
 magice_client_user:
-    client_id:      4
-    client_secret:  62e8393r03woo0ooo004c08kgwsws0wcwk4kgc088cskoc0sc8
+    client_id:      1
+    client_secret:  kyfvhv8b3tc840c84cocs04sw8ggos4c4w848gw04gss488cw
     url_register:   http://a.com/app_dev.php/user/register
     url_token:      http://a.com/app_dev.php/oauth/v2/token
     url_auth:       http://a.com/app_dev.php/oauth/v2/auth

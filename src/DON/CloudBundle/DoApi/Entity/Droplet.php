@@ -5,9 +5,6 @@ use DigitalOceanV2\Entity\Droplet as BaseDroplet;
 use DigitalOceanV2\Entity\Kernel;
 use DON\CloudBundle\Entity\Server;
 
-/**
- * @deprecated this hacking for https://github.com/digitaloceancloud/api-v2/issues/50
- */
 class Droplet extends BaseDroplet
 {
     const FEATURE_VIRTIO             = 'virtio';
@@ -19,11 +16,6 @@ class Droplet extends BaseDroplet
      * @var Kernel
      */
     public $originalKernel;
-
-    /**
-     * @deprecated
-     */
-    public $isEnableBackups;
 
     public function __construct(BaseDroplet $droplet, Server $server)
     {

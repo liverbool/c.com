@@ -168,17 +168,21 @@ Ext.define 'Ext.ux.jp.panel.Operation',
         # Ext.data.operation exception
         if result and result.exception
             response = result.error.response
+            console.log 'A'
 
         if result and result.isUpdateOperation and response is null
             response = result._response
+            console.log 'B'
 
         # Ext.Ajax.request#callback(cfg, response, success)
         if result and result.getResponseHeader
             response = result
+            console.log 'C'
 
         if response
             responseder.code = response.status
             responseder.msg = response.statusText
+            console.log 'D'
 
             # try to get message
             if /json/i.test(response.getResponseHeader('Content-Type')) and response.responseText
@@ -186,26 +190,32 @@ Ext.define 'Ext.ux.jp.panel.Operation',
                 responseder.code = res.code or res.statusCode or responseder.code
                 responseder.msg = res.message or responseder.msg
                 responseder.res = res
+                console.log 'D.1'
 
                 # being processing
                 if @isProcessing() and res.actionIds
                     responseder.actionId = res.actionIds[0]
+                    console.log 'D.1.1'
 
             # being processing (anather case)
             if @isProcessing() and actionId = response.getResponseHeader 'X-Action-Id'
                 responseder.actionId = actionId if actionId isnt 'NO_VALUE'
+                console.log 'D.2'
 
             # start being processing
             if @isProcessing() and responseder.actionId
                 @whenProgress responseder
+                console.log 'D.3'
 
             # success with 204
             if response.status is 204 and !responseder.actionId
+                console.log 'D.4'
                 return @success()
 
             # while prosessing (Action return)
             # MUST make syre this ony TRUE with response Action!
             if @isProcessing() and responseder.res
+                console.log 'D.5'
                 responseder.actionId = responseder.res[@getContinuousId()]
                 switch responseder.res.status
                     when 'in-progress' then @whenProgress responseder
@@ -217,8 +227,10 @@ Ext.define 'Ext.ux.jp.panel.Operation',
             if @isSuccess() then @setOperation 'successMessage', responseder.msg
 
     whenProgress: (responseder) ->
+        console.log 'whenProgress'
         if no isnt @fireEvent 'when.progress', responseder
             @processer @, responseder.actionId
+            console.log 'whenProgress.1'
 
     whenCompleted: (responseder) ->
         @setPercentage 100

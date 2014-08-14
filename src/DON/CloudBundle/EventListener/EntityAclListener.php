@@ -6,6 +6,7 @@ use Doctrine\ORM\Event\LifecycleEventArgs;
 use DON\CloudBundle\Entity\Server;
 use DON\CloudBundle\Entity\ServerError;
 use DON\CloudBundle\Entity\SSHKey;
+use DON\CloudBundle\Entity\Domain;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Security\Acl\Domain\ObjectIdentity;
 use Symfony\Component\Security\Acl\Domain\UserSecurityIdentity;
@@ -59,8 +60,8 @@ class EntityAclListener implements EventSubscriber
     private function isSupportedClass($key, $object)
     {
         $classes = array(
-            'set_user' => array(Server::CLASS, ServerError::CLASS, SSHKey::CLASS),
-            'set_acl'  => array(Server::CLASS, SSHKey::CLASS)
+            'set_user' => array(Server::CLASS, ServerError::CLASS, SSHKey::CLASS, Domain::CLASS),
+            'set_acl'  => array(Server::CLASS, SSHKey::CLASS, Domain::CLASS)
         );
 
         return in_array(get_class($object), $classes[$key]);

@@ -198,37 +198,47 @@ Ext.define('Ext.ux.jp.panel.Operation', {
     responseder = new Object;
     if (result && result.exception) {
       response = result.error.response;
+      console.log('A');
     }
     if (result && result.isUpdateOperation && response === null) {
       response = result._response;
+      console.log('B');
     }
     if (result && result.getResponseHeader) {
       response = result;
+      console.log('C');
     }
     if (response) {
       responseder.code = response.status;
       responseder.msg = response.statusText;
+      console.log('D');
       if (/json/i.test(response.getResponseHeader('Content-Type')) && response.responseText) {
         res = Ext.decode(response.responseText);
         responseder.code = res.code || res.statusCode || responseder.code;
         responseder.msg = res.message || responseder.msg;
         responseder.res = res;
+        console.log('D.1');
         if (this.isProcessing() && res.actionIds) {
           responseder.actionId = res.actionIds[0];
+          console.log('D.1.1');
         }
       }
       if (this.isProcessing() && (actionId = response.getResponseHeader('X-Action-Id'))) {
         if (actionId !== 'NO_VALUE') {
           responseder.actionId = actionId;
         }
+        console.log('D.2');
       }
       if (this.isProcessing() && responseder.actionId) {
         this.whenProgress(responseder);
+        console.log('D.3');
       }
       if (response.status === 204 && !responseder.actionId) {
+        console.log('D.4');
         return this.success();
       }
       if (this.isProcessing() && responseder.res) {
+        console.log('D.5');
         responseder.actionId = responseder.res[this.getContinuousId()];
         switch (responseder.res.status) {
           case 'in-progress':
@@ -253,8 +263,10 @@ Ext.define('Ext.ux.jp.panel.Operation', {
     }
   },
   whenProgress: function(responseder) {
+    console.log('whenProgress');
     if (false !== this.fireEvent('when.progress', responseder)) {
-      return this.processer(this, responseder.actionId);
+      this.processer(this, responseder.actionId);
+      return console.log('whenProgress.1');
     }
   },
   whenCompleted: function(responseder) {

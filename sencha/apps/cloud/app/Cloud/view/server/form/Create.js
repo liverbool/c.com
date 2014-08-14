@@ -19,6 +19,11 @@ Ext.define('Magice.Cloud.view.server.form.Create', {
     type: 'card',
     deferredRender: true
   },
+  listeners: {
+    show: function() {
+      return this.maximize(true);
+    }
+  },
   defaults: {
     xtype: 'container',
     layout: 'fit',

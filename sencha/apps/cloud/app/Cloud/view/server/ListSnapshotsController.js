@@ -7,6 +7,9 @@ Ext.define('Magice.Cloud.view.server.ListSnapshotsController', {
   },
   'on.list.snapshots.edit': function(ed, cell) {
     var title, win;
+    if (!ed.editing) {
+      return;
+    }
     win = ed.grid.up('window');
     title = win.title;
     win.setTitle(sprintf('%s <i><small>%s</small></i>', title, this.locale.snapshotlist.updating));

@@ -41,8 +41,8 @@ Ext.define 'Magice.Cloud.view.server.CreateController',
 
         @model.set 'summary',
             hostname: steps.hostname.data
-            size: steps.size.data[0]
-            image: steps.image.data[0]
+            size: steps.size.data[0].data
+            image: steps.image.data[0].data
             features: steps.feature.data
 
         win.setActiveItem 2
@@ -60,12 +60,12 @@ Ext.define 'Magice.Cloud.view.server.CreateController',
             for f in summary.features
                 ipv6 = yes if f.data.slug is 'ipv6'
                 backups = yes if f.data.slug is 'backups'
-                privateNetworking = yes if f.slug is 'private_networking'
+                privateNetworking = yes if f.data.slug is 'private_networking'
 
         data =
             name: summary.hostname
-            size: summary.size.data.slug
-            image: summary.image.data.slug
+            size: summary.size.slug
+            image: summary.image.slug
             ipv6: ipv6
             backups: backups
             privateNetworking: privateNetworking
@@ -76,7 +76,10 @@ Ext.define 'Magice.Cloud.view.server.CreateController',
             method: 'POST'
             jsonData: data
             success: (response) => operation.processing response
-            failure: (response) => operation.failure response
+            failure: (response) =>
+                operation.failure response
+                win = me.up 'window'
+                @showItems win, ['#btnBack']
 
     getCreateOperation: -> @lookup('creatorWindow').getOperation()
 
@@ -87,10 +90,13 @@ Ext.define 'Magice.Cloud.view.server.CreateController',
             @clearData 'creatorsDistributors'
             @clearData 'creatorsFeatures'
         else
-            @model.set 'creatorsImages', rs[0].images
-            @loadData 'creatorsSizes', rs[0].sizes
-            @loadData 'creatorsDistributors',rs[0].dists
-            @loadData 'creatorsFeatures', rs[0].features
+            r = rs[0]
+            @model.set 'creatorsImages', r.get 'images'
+            @loadData 'creatorsSizes', r.get 'sizes'
+            @loadData 'creatorsDistributors', r.get 'dists'
+            @loadData 'creatorsFeatures', r.get 'features'
+            @loadData 'creatorsPrivateImages', r.get 'privates'
+            @loadData 'creatorsBackupImages', r.get 'backups'
 
     setStepActive: (data, step, active) ->
         # store step state
@@ -102,16 +108,29 @@ Ext.define 'Magice.Cloud.view.server.CreateController',
 
         @model.set 'steps', steps
 
+    deselectAllOfChildGrid: (parent, current) ->
+        for grid in parent.query('grid')
+            grid.getSelectionModel().deselectAll(yes) if grid.id isnt current.id
+
     'on.creator.hostname.change': (me) ->
         @setStepActive me.value, 'hostname', me.value && me.isValid()
 
     'on.creator.dist.selectionchange': (sm, rs) ->
         images = @model.get 'creatorsImages'
-        @loadData 'creatorsDistributorsImages', images[rs[0].slug]
+        @loadData 'creatorsDistributorsImages', images[rs[0].get 'slug']
 
         @setStepActive null, 'image', no
 
     'on.creator.dist.image.selectionchange': (sm, rs) ->
+        @deselectAllOfChildGrid sm.view.up('creator-image'), sm.view.grid
+        @setStepActive rs, 'image', rs.length
+
+    'on.creator.private.image.selectionchange': (sm, rs) ->
+        @deselectAllOfChildGrid sm.view.up('creator-image'), sm.view.grid
+        @setStepActive rs, 'image', rs.length
+
+    'on.creator.backup.image.selectionchange': (sm, rs) ->
+        @deselectAllOfChildGrid sm.view.up('creator-image'), sm.view.grid
         @setStepActive rs, 'image', rs.length
 
     'on.creator.size.selectionchange': (sm, rs) ->
@@ -119,5 +138,7 @@ Ext.define 'Magice.Cloud.view.server.CreateController',
 
     'on.creator.feature.selectionchange': (sm, rs) ->
         @setStepActive rs, 'feature', rs.length
+        sm.view.el.select('div.item input').set checked: null, no
+        sm.view.el.select('div.x-item-selected input').set checked: yes, no
 
     'on.create.ended': (res) -> @load 'servers'

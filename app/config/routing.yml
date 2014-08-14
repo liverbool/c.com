@@ -6,3 +6,4 @@ don_cloud:
     resource: "@DONCloudBundle/Controller"
     type: annotation
     prefix:   /cloud
+    defaults: {_format: json}

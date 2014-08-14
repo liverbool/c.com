@@ -28,18 +28,17 @@ Ext.define 'Magice.Cloud.view.server.Controller',
 
     alias: 'controller.servers'
 
-    statics:
-        # to shareable with other controller
-        processer: (operation, actionId) ->
+    # to shareable with other controller
+    processer: (operation, actionId) ->
+        console.log 'processer::actionId: ' + actionId
+        return operation.warning() if !actionId
 
-            return operation.warning() if !actionId
-
-            Ext.Ajax.request
-                url: '/cloud/actions/[id]'
-                parameters: id: actionId
-                method: 'GET'
-                success: (response) -> operation.processing response
-                failure: (response) -> operation.warning response
+        Ext.Ajax.request
+            url: '/cloud/actions/[id]'
+            parameters: id: actionId
+            method: 'GET'
+            success: (response) -> operation.processing response
+            failure: (response) -> operation.warning response
 
     server: (action, opts) ->
         server = @model.get 'server'
@@ -62,7 +61,7 @@ Ext.define 'Magice.Cloud.view.server.Controller',
             return Ext.Msg.alert @locale.powerCurrentlyOff
 
     powerCurrentlyOn: ->
-        if @server('get', 'status') is 'off'
+        if @server('get', 'status') is 'active'
             @locale.powerCurrentlyOn.message = sprintf @locale.powerCurrentlyOn.message, @server('get', 'name')
             return Ext.Msg.alert @locale.powerCurrentlyOn
 
@@ -77,7 +76,8 @@ Ext.define 'Magice.Cloud.view.server.Controller',
         config = config or {}
         config.locks = @view
 
-        @view.add(Ext.widget(name, config)).show()
+        win = @view.add(Ext.widget(name, config))
+        win.show()
 
     sync: (server, params) ->
         if !server or !server.get 'id'

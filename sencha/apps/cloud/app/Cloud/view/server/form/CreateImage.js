@@ -49,10 +49,6 @@ Ext.define('Magice.Cloud.view.server.form.CreateImage', {
           bind: {
             store: '{creatorsDistributorsImages}'
           },
-          selModel: {
-            mode: 'SINGLE',
-            allowDeselect: false
-          },
           listeners: {
             selectionchange: 'on.creator.dist.image.selectionchange'
           },
@@ -68,12 +64,42 @@ Ext.define('Magice.Cloud.view.server.form.CreateImage', {
       ]
     }, {
       title: 'My Images',
-      html: 'Comming soon ..',
-      disabled: true
+      xtype: 'grid',
+      bind: {
+        store: '{creatorsPrivateImages}'
+      },
+      listeners: {
+        selectionchange: 'on.creator.private.image.selectionchange'
+      },
+      columns: [
+        {
+          text: 'Distribution',
+          dataIndex: 'distribution'
+        }, {
+          flex: 1,
+          text: 'Name',
+          dataIndex: 'name'
+        }
+      ]
     }, {
       title: 'My Backups',
-      html: 'Comming soon ..',
-      disabled: true
+      xtype: 'grid',
+      bind: {
+        store: '{creatorsBackupImages}'
+      },
+      listeners: {
+        selectionchange: 'on.creator.backup.image.selectionchange'
+      },
+      columns: [
+        {
+          text: 'Distribution',
+          dataIndex: 'distribution'
+        }, {
+          flex: 1,
+          text: 'Name',
+          dataIndex: 'name'
+        }
+      ]
     }
   ]
 });

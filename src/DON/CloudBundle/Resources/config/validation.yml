@@ -1,15 +1,9 @@
 DON\CloudBundle\Entity\Server:
     constraints:
-    # TODO: If delete server in the same?
-    # eg.
-    # - 1. crate A [TRUE]       no deleted A
-    # - 2. delete A [TRUE]      create deleted A
-    # - 3. crate A [TRUE]       new with deleted A exist
-    # - 4. delete A [FALSE]     flag A to deleted will dupicate wiht #2
         - Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity:
-            fields: [name, deleted]
+            fields: [name]
             errorPath: name
-            message: 'This name is already in use.'
+            message: don.server.name.already
 
     properties:
         name:
@@ -44,3 +38,15 @@ DON\CloudBundle\Entity\SSHKey:
         publicKey:
             - NotBlank:
                 message: don.sshkey.public_key.blank
+
+DON\CloudBundle\Entity\Domain:
+    constraints:
+        - Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity:
+            fields: [name]
+            errorPath: name
+            message: don.domain.name.already
+
+    properties:
+        name:
+            - NotBlank:
+                message: don.domain.name.blank

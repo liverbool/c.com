@@ -24,7 +24,7 @@
         "php": ">=5.3.3",
         "symfony/symfony": "2.5.*",
         "doctrine/orm": "~2.2,>=2.2.3",
-        "doctrine/doctrine-bundle": "~1.2",
+        "doctrine/doctrine-bundle": "~1.3@dev",
         "twig/extensions": "~1.0",
         "symfony/assetic-bundle": "~2.3",
         "symfony/swiftmailer-bundle": "~2.3",
@@ -33,15 +33,19 @@
         "sensio/framework-extra-bundle": "~3.0",
         "incenteev/composer-parameter-handler": "~2.0",
         "magice/clientuser-bundle": "dev-master",
-        "toin0u/digitalocean-v2": "dev-master",
-        "guzzle/guzzle": "~3.7",
         "magice/rest-bundle": "dev-master",
+        "hwi/oauth-bundle": "0.4.*@dev",
+        "friendsofsymfony/user-bundle": "~2.0@dev",
+        "sylius/resource":"dev-master",
+        "sylius/resource-bundle":"dev-master",
+        "toin0u/digitalocean-v2": "0.2.*@dev",
+        "guzzle/guzzle": "~3.7",
         "stof/doctrine-extensions-bundle": "~1.1"
     },
     "require-dev": {
-        "sensio/generator-bundle": "~2.3"
+        "sensio/generator-bundle": "~2.3",
+        "liil/kint": "dev-master"
     },
-    "minimum-stability": "dev",
     "scripts": {
         "post-root-package-install": [
             "SymfonyStandard\\Composer::hookRootPackageInstall"

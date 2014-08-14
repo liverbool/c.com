@@ -13,22 +13,34 @@ Ext.define('Magice.Cloud.view.server.form.CreateSize', {
       sortable: false,
       menuDisabled: true,
       text: 'CPU',
-      dataIndex: 'vcpus'
+      dataIndex: 'vcpus',
+      renderer: function(v) {
+        return v + 'GB';
+      }
     }, {
       sortable: false,
       menuDisabled: true,
       text: 'Memory',
-      dataIndex: 'memory'
+      dataIndex: 'memory',
+      renderer: function(v) {
+        return Ext.humanize.format(v, '0b', 'mb');
+      }
     }, {
       sortable: false,
       menuDisabled: true,
       text: 'SSD Disk',
-      dataIndex: 'disk'
+      dataIndex: 'disk',
+      renderer: function(v) {
+        return v + 'GB';
+      }
     }, {
       sortable: false,
       menuDisabled: true,
       text: 'Transfer',
-      dataIndex: 'transfer'
+      dataIndex: 'transfer',
+      renderer: function(v) {
+        return v + 'GB';
+      }
     }, {
       sortable: false,
       menuDisabled: true,

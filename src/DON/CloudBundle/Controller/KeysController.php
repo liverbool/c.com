@@ -3,9 +3,9 @@
 namespace DON\CloudBundle\Controller;
 
 use DON\CloudBundle\Entity\SSHKey;
-use DON\CloudBundle\Exception\ResponseException;
+use DigitalOceanV2\Exception\ResponseException;
 use Magice\Bundle\RestBundle\Annotation as Rest;
-use Magice\Bundle\RestBundle\Exception\EntityValidatorException;
+use Magice\Bundle\RestBundle\Domain\ManagerException;
 use Symfony\Component\HttpFoundation\Request;
 
 class KeysController extends DigitalController
@@ -17,9 +17,9 @@ class KeysController extends DigitalController
 
     /**
      * @param \Exception $exception
-     * @param SSHKey     $key
+     * @param SSHKey $key
      *
-     * @throws \DON\CloudBundle\Exception\ResponseException
+     * @throws \DigitalOceanV2\Exception\ResponseException
      * @throws \Exception
      */
     private function exceptionHandle(\Exception $exception, SSHKey $key)
@@ -27,7 +27,8 @@ class KeysController extends DigitalController
         if ($exception instanceof ResponseException) {
             // super make sure droplet deleted
             if ($exception->getErrorId() === 'NOT_FOUND') {
-                $key->remove($this->getEntityManager());
+                $this->getDomainManager()->delete($key);
+
                 return;
             } else {
                 throw $exception;
@@ -44,12 +45,12 @@ class KeysController extends DigitalController
      */
     private function getKey($id)
     {
-        return $this->findNotFound('do.repository.sshkey', $id);
+        return $this->getDomainManager()->findNotFound('do.repository.sshkey', $id);
     }
 
     /**
      * @param int|\DigitalOceanV2\Entity\Key $idOrSSH
-     * @param SSHKey                         $ssh
+     * @param SSHKey $ssh
      *
      * @return \DigitalOceanV2\Entity\Key
      */
@@ -61,12 +62,13 @@ class KeysController extends DigitalController
             $node = $this->api()->getById($idOrSSH);
         }
 
-        $ssh = $ssh ? : $this->getKey($node->id);
+        $ssh = $ssh ?: $this->getKey($node->id);
 
         $ssh->setName($node->name)
             ->setPublicKey($node->publicKey)
-            ->setFingerPrint($node->fingerprint)
-            ->save($this->getEntityManager(), $this->get('validator'));
+            ->setFingerPrint($node->fingerprint);
+
+        $this->getDomainManager()->validate($ssh)->save();
 
         return $node;
     }
@@ -77,16 +79,12 @@ class KeysController extends DigitalController
      */
     public function getAction()
     {
-        /**
-         * @var SSHKey[] $sshs
-         */
-
         $keys = array();
-        $sshs = (array) $this->get('do.repository.sshkey')->findByUser($this->getUser());
+        $sshs = $this->get('do.repository.sshkey')->findByUser($this->getUser());
 
         foreach ($sshs as $ssh) {
             try {
-                $key    = $this->api()->getById($ssh->getId());
+                $key = $this->api()->getById($ssh->getId());
                 $keys[] = $this->sync($key, $ssh);
             } catch (\Exception $exception) {
                 $this->exceptionHandle($exception, $ssh);
@@ -103,29 +101,30 @@ class KeysController extends DigitalController
     public function createAction(Request $request)
     {
         $name = $request->get('name');
-        $key  = $request->get('publicKey');
-        $ssh  = new SSHKey();
+        $publicKey = $request->get('publicKey');
+        $dm = $this->getDomainManager();
+        $ssh = new SSHKey();
+
+        $ssh->setName($name)->setPublicKey($publicKey);
 
         try {
-            $ssh->setName($name)
-                ->setPublicKey($key)
-                ->validate($this->get('validator'));
-        } catch (EntityValidatorException $e) {
+            $dm->validate($ssh);
+            $key = $this->api()->create($name, $publicKey);
+            $ssh->setFingerPrint($key->fingerprint);
+            $dm->save();
+
+            return $key;
+        } catch (ManagerException $e) {
             return $e->getErrors();
         } catch (\Exception $e) {
             throw $e;
         }
-
-        $key = $this->api()->create($name, $key);
-        $key = $this->sync($key, $ssh->setId($key->id));
-
-        return $key;
     }
 
     /**
      * @Rest\View(statusCode=204)
      * @Rest\Put("keys/{id}", requirements={"id" = "\d+"})
-     * @Rest\Acl("is_granted('OWNER', ssh)")
+     * @Rest\Acl({"OWNER", "ssh"})
      */
     public function updateAction(SSHKey $ssh, Request $request)
     {
@@ -138,7 +137,7 @@ class KeysController extends DigitalController
     /**
      * @Rest\View(statusCode=200)
      * @Rest\Get("keys/{id}", requirements={"id" = "\d+"})
-     * @Rest\Acl("is_granted('OWNER', ssh)")
+     * @Rest\Acl({"OWNER", "ssh"})
      */
     public function readAction(SSHKey $ssh)
     {
@@ -148,7 +147,7 @@ class KeysController extends DigitalController
     /**
      * @Rest\View(statusCode=204)
      * @Rest\Delete("keys/{id}", requirements={"id" = "\d+"})
-     * @Rest\Acl("is_granted('OWNER', ssh)")
+     * @Rest\Acl({"OWNER", "ssh"})
      */
     public function destroyAction(SSHKey $ssh)
     {
@@ -161,8 +160,7 @@ class KeysController extends DigitalController
      */
     public function testAction()
     {
-        $validator = $this->get('validator');
-        $all       = $this->api()->getAll();
+        $all = $this->api()->getAll();
 
         foreach ($all as $key) {
             try {
@@ -170,9 +168,9 @@ class KeysController extends DigitalController
                 $server->setId($key->id)
                     ->setName($key->name)
                     ->setPublicKey($key->publicKey)
-                    ->setFingerPrint($key->fingerprint)
-                    ->save($this->getEntityManager(), $validator);
-            } catch (EntityValidatorException $e) {
+                    ->setFingerPrint($key->fingerprint);
+                $this->getDomainManager()->validate($server)->save();
+            } catch (ManagerException $e) {
                 return $e->getErrors();
             } catch (\Exception $exception) {
                 throw $exception;

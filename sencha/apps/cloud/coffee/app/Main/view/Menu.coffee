@@ -20,6 +20,7 @@ Ext.define "Magice.Main.view.Menu",
                 ['servers', 'Servers', 'desktop']
                 ['images', 'Images', 'desktop']
                 ['sshkeys', 'SSH Keys', 'desktop']
+                ['domains', 'DNS', 'desktop']
             ]
         }
 

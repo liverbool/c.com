@@ -3,9 +3,19 @@ Ext.define "Ext.extend.Msg", {requires: 'Ext.Msg'}, ->
     Ext.Msg.shadow = no
 
     Ext.Msg.error = (title, message, fn, scope) ->
-
         if Ext.isString title
             title = title: title, message: message
+
+        if Ext.isObject(title) && title['getResponseHeader']
+            try
+                res = Ext.JSON.decode title.responseText
+                message = res.message
+            catch e
+                message = title.statusText
+
+            title =
+                title: '[' + title.status + '] ' + title.statusText
+                message: message
 
         Ext.Msg.show Ext.apply({
             buttons: Ext.Msg.OK

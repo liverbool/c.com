@@ -15,6 +15,6 @@ Ext.define('Magice.Cloud.view.server.form.CreateFeature', {
       multiSelect: true,
       mode: 'SIMPLE'
     },
-    tpl: ['<div class="ui horizontal list">', '<tpl for=".">', '<div class="item">', '<input type="checkbox"/>', '<div class="content">', '<div class="header">{name}</div>', '</div>', '</div>', '</tpl>', '</div>']
+    tpl: ['<div class="ui horizontal list">', '<tpl for=".">', '<div class="item">', '<div class="ui toggle checkbox">', '<input name="pet" type="checkbox">', '<label>{name}</label>', '</div>', '</div>', '</tpl>', '</div>']
   }
 });

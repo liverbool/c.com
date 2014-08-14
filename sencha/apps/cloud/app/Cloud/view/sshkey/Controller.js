@@ -2,16 +2,8 @@ Ext.define('Magice.Cloud.view.sshkey.Controller', {
   extend: 'Magice.base.ViewController',
   alias: 'controller.sshkeys',
   locale: {
-    renameError: {
-      title: 'Oops!',
-      message: 'Unable to update your image name.'
-    },
-    imagelist: {
-      destoryTitle: 'Destroy image.',
-      noSelection: {
-        title: 'Oops!',
-        message: "Cannot destroy empty record. You may lost backup's selection."
-      }
+    sshkey: {
+      destroyConfirm: 'This will remove your key. Do you wish to proceed?'
     }
   },
   takeAction: function(name, config) {
@@ -51,7 +43,7 @@ Ext.define('Magice.Cloud.view.sshkey.Controller', {
     return this.callAction('on.create', btn);
   },
   'on.destroy': function(btn) {
-    return this.record().erase();
+    return this.record().erase(this.locale.sshkey.destroyConfirm);
   },
   'on.save': function(btn) {
     var form, rec, win;

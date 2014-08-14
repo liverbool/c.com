@@ -1,0 +1,4 @@
+DON\CloudBundle\Entity\Server:
+  properties:
+    user:
+      exclude: true

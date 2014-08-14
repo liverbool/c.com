@@ -4,7 +4,7 @@ namespace DON\CloudBundle\Controller;
 
 use DON\CloudBundle\Action\Creator;
 use DON\CloudBundle\Entity\Server;
-use DON\CloudBundle\Exception\ResponseException;
+use DigitalOceanV2\Exception\ResponseException;
 use Magice\Bundle\RestBundle\Annotation as Rest;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -17,9 +17,9 @@ class ImagesController extends DigitalController
 
     /**
      * @param \Exception $exception
-     * @param Server     $server
+     * @param Server $server
      *
-     * @throws \DON\CloudBundle\Exception\ResponseException
+     * @throws \DigitalOceanV2\Exception\ResponseException
      * @throws \Exception
      */
     private function exceptionHandle(\Exception $exception, Server $server)
@@ -27,7 +27,8 @@ class ImagesController extends DigitalController
         if ($exception instanceof ResponseException) {
             // super make sure droplet deleted
             if ($exception->getErrorId() === 'NOT_FOUND') {
-                $server->remove($this->getEntityManager());
+                $this->getDomainManager()->delete($server);
+
                 return;
             } else {
                 throw $exception;
@@ -35,6 +36,51 @@ class ImagesController extends DigitalController
         }
 
         throw $exception;
+    }
+
+    /**
+     * @param Server $server
+     * @param $isDeleted
+     * @param $serverSnapshots
+     * @param $images
+     * @return array
+     * @throws \Exception
+     */
+    private function updateSnapshotMetadata(Server $server, $isDeleted, &$serverSnapshots, &$images)
+    {
+        $snapshots = $server->getSnapshots();
+        foreach ($snapshots as $snapshotId) {
+            try {
+                if ($snapshot = $this->api()->getById($snapshotId)) {
+                    $snapshot = (array)$snapshot;
+
+                    $snapshot['machine'] = array(
+                        'id' => $server->getId(),
+                        'name' => $server->getName(),
+                        'deleted' => $isDeleted
+                    );
+
+                    $snapshot['machineId'] = $server->getId();
+                    $snapshot['type'] = 'snapshot';
+
+                    $images[] = $snapshot;
+                    $serverSnapshots[] = $snapshotId;
+                }
+            } catch (\Exception $exception) {
+                if ($exception instanceof ResponseException) {
+                    if ($exception->getErrorId() === 'NOT_FOUND') {
+                        // to ingnore $snapshotId
+                        continue;
+                    } else {
+                        throw $exception;
+                    }
+                } else {
+                    throw $exception;
+                }
+            }
+        }
+
+        return $snapshots;
     }
 
     /**
@@ -61,10 +107,10 @@ class ImagesController extends DigitalController
      * @Rest\Get("images/me")
      * @Rest\Get("images/me/{type}")
      */
-    public function myImagesAction($type = null, Request $request)
+    public function getMyImagesAction($type = null, Request $request)
     {
-        $type    = $type ? : $request->query->get('type');
-        $images  = array();
+        $type = $type ?: $request->query->get('type');
+        $images = array();
         $servers = $this->getServers();
 
         if (empty($servers)) {
@@ -77,33 +123,42 @@ class ImagesController extends DigitalController
                 $backups = $this->get('do.droplet')->getBackups($server->getId());
                 if ($type !== 'snapshot' && !empty($backups)) {
                     foreach ($backups as $img) {
-                        $img              = (array) $img;
-                        $img['machine']   = array('id' => $server->getId(), 'name' => $server->getName());
+                        $img = (array)$img;
+                        $img['machine'] = array('id' => $server->getId(), 'name' => $server->getName());
                         $img['machineId'] = $server->getId();
-                        $img['type']      = 'backup';
-                        $images[]         = $img;
+                        $img['type'] = 'backup';
+                        $images[] = $img;
                     }
                 }
             } catch (\Exception $exception) {
                 $this->exceptionHandle($exception, $server);
             }
 
+            if ($type !== 'backup') {
 
-            if ($type !== 'backup' && !empty($server->getSnapshots())) {
+                // try to retrieve from remote
+                $snapshots = $this->get('do.droplet')->getSnapshots($server->getId());
+
                 try {
-                    $snapshots = $this->get('do.droplet')->getSnapshots($server->getId());
-                    if (!empty($snapshots)) {
-                        foreach ($snapshots as $img) {
-                            $img              = (array) $img;
-                            $img['machine']   = array('id' => $server->getId(), 'name' => $server->getName());
-                            $img['machineId'] = $server->getId();
-                            $img['type']      = 'snapshot';
-                            $images[]         = $img;
-                        }
+                    if (empty($snapshots)) {
+                        // make sure! we really have no any snapshot
+                        $server->setSnapshots(null);
                     } else {
-                        // super make sure!
-                        $server->setSnapshots(null)->save($this->getEntityManager());
+                        // collect snapshots
+                        $snapshotsId = array();
+                        foreach ($snapshots as $img) {
+                            $img = (array)$img;
+                            $img['machine'] = array('id' => $server->getId(), 'name' => $server->getName());
+                            $img['machineId'] = $server->getId();
+                            $img['type'] = 'snapshot';
+                            $images[] = $img;
+                            $snapshotsId[] = $img['id'];
+                        }
+
+                        $server->setSnapshots($snapshotsId);
                     }
+
+                    $this->getDomainManager()->save($server);
                 } catch (\Exception $exception) {
                     $this->exceptionHandle($exception, $server);
                 }
@@ -111,6 +166,7 @@ class ImagesController extends DigitalController
         }
 
         // try to get from deleted droplets
+        // some case we may remove droplet but our snapshots still alive
         if ($type !== 'backup') {
             $this->disableSoftDelete();
 
@@ -121,40 +177,17 @@ class ImagesController extends DigitalController
                  * @var \DON\CloudBundle\Entity\Server $server
                  */
                 foreach ($servers as $server) {
-                    if (!empty($snapshots = $server->getSnapshots())) {
+                    if (!empty($server->getSnapshots())) {
 
                         // update current snapshot
                         // it may removed by user in client UI
                         $serverSnapshots = array();
-
-                        foreach ($snapshots as $snapshotId) {
-                            try {
-                                if ($snapshot = $this->api()->getById($snapshotId)) {
-                                    $snapshot              = (array) $snapshot;
-                                    $snapshot['machine']   = array('id' => $server->getId(), 'name' => $server->getName(), 'deleted' => true);
-                                    $snapshot['machineId'] = $server->getId();
-                                    $snapshot['type']      = 'snapshot';
-                                    $images[]              = $snapshot;
-                                    $serverSnapshots[]     = $snapshotId;
-                                }
-                            } catch (\Exception $exception) {
-                                if ($exception instanceof ResponseException) {
-                                    if ($exception->getErrorId() === 'NOT_FOUND') {
-                                        // to ingnore $snapshotId
-                                        continue;
-                                    } else {
-                                        throw $exception;
-                                    }
-                                } else {
-                                    throw $exception;
-                                }
-                            }
-
-                        }
+                        $snapshots = $this->updateSnapshotMetadata($server, true, $serverSnapshots, $images);
 
                         // update currect value
                         if (!empty(array_diff($serverSnapshots, $snapshots))) {
-                            $server->setSnapshots($serverSnapshots)->save($this->getEntityManager());
+                            $server->setSnapshots($serverSnapshots);
+                            $this->getDomainManager()->save($server);
                         }
                     }
                 }
@@ -169,7 +202,7 @@ class ImagesController extends DigitalController
     /**
      * @Rest\View(statusCode=204)
      * @Rest\Put("images/{id}/{imageId}", requirements={"id" = "\d+", "imageId" = "\d+"})
-     * @Rest\Acl("is_granted('OWNER', server)")
+     * @Rest\Acl({"OWNER", "server"})
      */
     public function updateAction(Server $server, $imageId, Request $request)
     {
@@ -194,7 +227,7 @@ class ImagesController extends DigitalController
     /**
      * @Rest\View(statusCode=204, headerId="X-Action-Id")
      * @Rest\Delete("images/{id}/{imageId}", requirements={"id" = "\d+", "imageId" = "\d+"})
-     * @Rest\Acl("is_granted('OWNER', server)")
+     * @Rest\Acl({"OWNER", "server"})
      */
     public function deleteAction(Server $server, $imageId)
     {

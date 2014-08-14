@@ -4,6 +4,7 @@ namespace DON\CloudBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
+use Gedmo\SoftDeleteable\Traits\SoftDeleteableEntity;
 use Gedmo\Timestampable\Traits\TimestampableEntity;
 
 /**
@@ -15,6 +16,7 @@ use Gedmo\Timestampable\Traits\TimestampableEntity;
 class SSHKey
 {
     use TimestampableEntity;
+    use SoftDeleteableEntity;
 
     /**
      * @var integer
@@ -41,18 +43,6 @@ class SSHKey
      * @ORM\Column(name="public_key", type="text")
      */
     private $publicKey;
-
-    /**
-     * @var \DateTime
-     * @ORM\Column(name="deletedAt", type="datetime", nullable=true)
-     */
-    private $deletedAt;
-
-    /**
-     * @var boolean
-     * --ORM\Column(name="deleted", type="boolean", nullable=true)
-     */
-    private $deleted;
 
     /**
      * @var \Magice\Bundle\ClientUserBundle\Entity\User
@@ -148,55 +138,6 @@ class SSHKey
     public function getPublicKey()
     {
         return $this->publicKey;
-    }
-
-    /**
-     * Set deletedAt
-     *
-     * @param \DateTime $deletedAt
-     *
-     * @return SSHKey
-     */
-    public function setDeletedAt($deletedAt)
-    {
-        $this->deletedAt = $deletedAt;
-        $this->deleted = !!$deletedAt;
-
-        return $this;
-    }
-
-    /**
-     * Get deletedAt
-     * @return \DateTime
-     */
-    public function getDeletedAt()
-    {
-        return $this->deletedAt;
-    }
-
-    /**
-     * Set deleted
-     *
-     * @param boolean $deleted
-     *
-     * @return SSHKey
-     */
-    public function setDeleted($deleted)
-    {
-        $this->deleted = $deleted;
-
-        $this->setDeletedAt($deleted ? new \DateTime() : null);
-
-        return $this;
-    }
-
-    /**
-     * Get deleted
-     * @return boolean
-     */
-    public function getDeleted()
-    {
-        return !!$this->deletedAt;
     }
 
     /**

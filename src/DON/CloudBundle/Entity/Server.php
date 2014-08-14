@@ -4,6 +4,7 @@ namespace DON\CloudBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
+use Gedmo\SoftDeleteable\Traits\SoftDeleteableEntity;
 use Gedmo\Timestampable\Traits\TimestampableEntity;
 
 /**
@@ -15,6 +16,7 @@ use Gedmo\Timestampable\Traits\TimestampableEntity;
 class Server
 {
     use TimestampableEntity;
+    use SoftDeleteableEntity;
 
     /**
      * @var integer
@@ -35,6 +37,12 @@ class Server
      * @ORM\Column(name="size", type="string", length=50)
      */
     private $size;
+
+    /**
+     * @var string
+     * @ORM\Column(name="ip", type="string", length=15, nullable=true)
+     */
+    private $ip;
 
     /**
      * @var string
@@ -78,18 +86,6 @@ class Server
      * @ORM\Column(name="price_hourly", type="decimal", precision=2)
      */
     private $priceHourly;
-
-    /**
-     * @var boolean
-     * --ORM\Column(name="deleted", type="boolean", nullable=true)
-     */
-    private $deleted;
-
-    /**
-     * @var \DateTime
-     * @ORM\Column(name="deletedAt", type="datetime", nullable=true)
-     */
-    private $deletedAt;
 
     /**
      * @var \Magice\Bundle\ClientUserBundle\Entity\User
@@ -143,6 +139,29 @@ class Server
     }
 
     /**
+     * Set ip
+     *
+     * @param string $ip
+     * @return $this
+     */
+    public function setIp($ip)
+    {
+        $this->ip = $ip;
+
+        return $this;
+    }
+
+    /**
+     * Get ip
+     *
+     * @return string
+     */
+    public function getIp()
+    {
+        return $this->ip;
+    }
+
+    /**
      * @param string $status
      *
      * @return $this
@@ -150,6 +169,7 @@ class Server
     public function setStatus($status)
     {
         $this->status = $status;
+
         return $this;
     }
 
@@ -229,6 +249,7 @@ class Server
     public function setPriceCreate($priceCreate)
     {
         $this->priceCreate = $priceCreate;
+
         return $this;
     }
 
@@ -248,6 +269,7 @@ class Server
     public function setPriceHourly($priceHourly)
     {
         $this->priceHourly = $priceHourly;
+
         return $this;
     }
 
@@ -287,6 +309,7 @@ class Server
     public function setSize($size)
     {
         $this->size = $size;
+
         return $this;
     }
 
@@ -296,49 +319,6 @@ class Server
     public function getSize()
     {
         return $this->size;
-    }
-
-    /**
-     * @param \DateTime $deletedAt
-     *
-     * @return $this
-     */
-    public function setDeletedAt($deletedAt)
-    {
-        $this->deletedAt = $deletedAt;
-        $this->deleted = !!$deletedAt;
-
-        return $this;
-    }
-
-    /**
-     * @return \DateTime
-     */
-    public function getDeletedAt()
-    {
-        return $this->deletedAt;
-    }
-
-    /**
-     * @param boolean $deleted
-     *
-     * @return $this;
-     */
-    public function setDeleted($deleted)
-    {
-        $this->deleted = $deleted;
-
-        $this->setDeletedAt($deleted ? new \DateTime() : null);
-
-        return $this;
-    }
-
-    /**
-     * @return boolean
-     */
-    public function getDeleted()
-    {
-        return !!$this->deletedAt;
     }
 
     /**

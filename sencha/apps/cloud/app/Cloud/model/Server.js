@@ -11,6 +11,15 @@ Ext.define('Magice.Cloud.model.Server', {
     }, {
       name: 'image'
     }, {
+      name: 'memory',
+      type: 'int'
+    }, {
+      name: 'disk',
+      type: 'int'
+    }, {
+      name: 'vcpus',
+      type: 'int'
+    }, {
       name: 'status'
     }, {
       name: 'size'
@@ -22,6 +31,9 @@ Ext.define('Magice.Cloud.model.Server', {
       name: 'features'
     }, {
       name: 'createdAt'
+    }, {
+      name: 'backupsEnabled',
+      type: 'boolean'
     }
   ]
 });

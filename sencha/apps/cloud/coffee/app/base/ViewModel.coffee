@@ -3,7 +3,7 @@ Ext.define 'Magice.base.ViewModel',
 
     # short hand to create Module's model
     # this's must have same namespace with this model
-    create: (model, data) ->
+    xx_create: (model, data) ->
         ns = @$className.split '.'
         len = ns.length
         ns[len-1] = model
@@ -18,7 +18,7 @@ Ext.define 'Magice.base.ViewModel',
     # @param object
     #   - callback Custom callback listeners for proxy callback avalible:
     #       * saved.finish.success
-    save: (record, options, callback) ->
+    xx_save: (record, options, callback) ->
         record = @get record if typeof record is 'string'
         record.save options
         record.on callback if callback

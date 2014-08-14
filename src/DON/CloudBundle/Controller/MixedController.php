@@ -3,6 +3,7 @@
 namespace DON\CloudBundle\Controller;
 
 use Magice\Bundle\RestBundle\Annotation as Rest;
+use Symfony\Component\HttpFoundation\Request;
 
 class MixedController extends DigitalController
 {
@@ -10,15 +11,31 @@ class MixedController extends DigitalController
      * @Rest\View()
      * @Rest\Get("creators")
      */
-    public function creatorsAction()
+    public function creatorsAction(Request $request)
     {
-        return $this->mock('mixed.json');
+        //return $this->mock('mixed.json');
 
         $regions = $this->get('do.region')->getAll();
-        $sizes   = $this->get('do.size')->getAll();
-        $images  = $this->get('do.image')->getAll();
+        $sizes = $this->get('do.size')->getAll();
+        $images = $this->get('do.image')->getAll();
         #$droplets = $this->get('do.droplet')->getAll();
         $creator = array();
+
+        $this->disableSoftDelete();
+        $servers = $this->get('do.repository.server')->findByUser($this->getUser());
+        $this->enableSoftDelete();
+
+        $privates = array();
+        $backups = array();
+
+        foreach ($servers as $server) {
+            $privates = array_merge($privates, (array)$server->getSnapshots());
+
+            if (!$server->getDeleted()) {
+                $backups = $this->get('do.droplet')->getBackups($server->getId());
+            }
+
+        }
 
         foreach ($regions as &$region) {
             // Use only singapore
@@ -27,8 +44,9 @@ class MixedController extends DigitalController
             }
 
             # convert to array to allow to add new property
-            $creator          = (array) $region;
+            $creator = (array)$region;
             $creator['sizes'] = array();
+            $creator['backups'] = $backups;
 
             foreach ($sizes as $size) {
                 if (in_array($size->slug, $region->sizes)) {
@@ -36,33 +54,47 @@ class MixedController extends DigitalController
                 }
             }
 
-            foreach ($creator['features'] as &$feature) {
+            $features = array();
+            foreach ($creator['features'] as $feature) {
                 switch ($feature) {
                     case 'virtio':
                         // enable by default
-                        //$feature = ['slug' => $feature, 'name' => 'Enable VirtIO'];
+                        //$creator['features'][] = ['slug' => $feature, 'name' => 'Enable VirtIO'];
                         break;
                     case 'private_networking':
-                        $feature = ['slug' => $feature, 'name' => 'Private Networking'];
+                        $features[] = ['slug' => $feature, 'name' => 'Private Networking'];
                         break;
                     case 'backups':
-                        $feature = ['slug' => $feature, 'name' => 'Enable Backups'];
+                        $features[] = ['slug' => $feature, 'name' => 'Enable Backups'];
                         break;
                     case 'ipv6':
-                        $feature = ['slug' => $feature, 'name' => 'IPv6'];
+                        $features[] = ['slug' => $feature, 'name' => 'IPv6'];
                         break;
                 }
             }
 
+            $creator['features'] = $features;
             $creator['images'] = array();
-            $creator['dists']  = array();
+            $creator['privates'] = array();
+            $creator['dists'] = array();
 
             foreach ($images as $image) {
                 if (in_array($region->slug, $image->regions)) {
-                    # TODO: check dist is MyImages
-                    $dist                       = strtolower(preg_replace('/\W/', '', $image->distribution));
-                    $creator['dists'][$dist]    = ['slug' => $dist, 'name' => $image->distribution];
-                    $creator['images'][$dist][] = $image;
+                    // prevent print unnecessary
+                    unset($image->actionIds);
+                    unset($image->regions);
+
+                    if ($image->public) {
+                        $dist = strtolower(preg_replace('/\W/', '', $image->distribution));
+                        $creator['dists'][$dist] = ['slug' => $dist, 'name' => $image->distribution];
+                        $creator['images'][$dist][] = $image;
+                    } else {
+                        if (in_array($image->id, $privates)) {
+                            $creator['privates'][] = $image;
+                        } else {
+                            // TODO: shared images
+                        }
+                    }
                 }
             }
 
@@ -102,6 +134,4 @@ class MixedController extends DigitalController
         //return $this->mock('sizes.json');
         return $this->get('do.limit')->getRateLimit();
     }
-
-
 }

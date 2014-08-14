@@ -35,6 +35,12 @@ Ext.define 'Magice.Cloud.view.server.Model',
         creatorsDistributorsImages:
             model: 'Magice.Cloud.model.Image'
 
+        creatorsPrivateImages:
+            model: 'Magice.Cloud.model.Image'
+
+        creatorsBackupImages:
+            model: 'Magice.Cloud.model.Image'
+
         servers:
             model: 'Magice.Cloud.model.Server'
             autoLoad: yes

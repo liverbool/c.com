@@ -4,14 +4,8 @@ Ext.define 'Magice.Cloud.view.sshkey.Controller',
     alias: 'controller.sshkeys'
 
     locale:
-        renameError:
-            title: 'Oops!'
-            message: 'Unable to update your image name.'
-        imagelist:
-            destoryTitle: 'Destroy image.'
-            noSelection:
-                title: 'Oops!'
-                message: "Cannot destroy empty record. You may lost backup's selection."
+        sshkey:
+            destroyConfirm: 'This will remove your key. Do you wish to proceed?'
 
     takeAction: (name, config) ->
         config.locks = @view
@@ -39,7 +33,7 @@ Ext.define 'Magice.Cloud.view.sshkey.Controller',
 
     'on.edit': (btn) -> @callAction 'on.create', btn
 
-    'on.destroy': (btn) -> @record().erase()
+    'on.destroy': (btn) -> @record().erase @locale.sshkey.destroyConfirm
 
     'on.save': (btn) ->
         rec = @record()

@@ -1,6 +1,6 @@
 Ext.define('Magice.base.ViewModel', {
   extend: 'Ext.app.ViewModel',
-  create: function(model, data) {
+  xx_create: function(model, data) {
     var len, ns;
     ns = this.$className.split('.');
     len = ns.length;
@@ -8,7 +8,7 @@ Ext.define('Magice.base.ViewModel', {
     ns[len - 2] = 'model';
     return Ext.create(ns.join('.'), data);
   },
-  save: function(record, options, callback) {
+  xx_save: function(record, options, callback) {
     if (typeof record === 'string') {
       record = this.get(record);
     }

@@ -49,6 +49,22 @@ Ext.define("Magice.base.Model", {
       });
     }
   },
+  erase: function(options) {
+    var confirm;
+    if (options && (options.confirm || typeof options === 'string')) {
+      if (options.confirm) {
+        confirm = options.confirm;
+        delete options.confirm;
+      } else {
+        confirm = options;
+        options = null;
+      }
+      if (!window.confirm(confirm)) {
+        return;
+      }
+    }
+    return this.callParent([options]);
+  },
   save: function(options) {
     var comp, form;
     if (options && options.isComponent) {
@@ -75,7 +91,7 @@ Ext.define("Magice.base.Model", {
     return this.callParent([options]);
   },
   saveCallback: function(rec, operation, success, comp, form) {
-    var data, field, handleType, key, msg, res, successTitle, title;
+    var data, error, errors, field, handleType, key, msg, res, successTitle, title, _i, _len, _ref;
     if (comp.isVisible()) {
       comp.setLoading(false);
     }
@@ -101,7 +117,7 @@ Ext.define("Magice.base.Model", {
       Ext.Msg.success(this.locale.saveCallback.success);
     }
     if (success && comp.isWindow && comp.closeOnSuccess !== false) {
-      comp.close();
+      comp.hide();
     }
     this.fireEvent('saved.finish.success', this._phantom, rec, operation, success, comp, form);
     this._phantom = false;
@@ -119,18 +135,31 @@ Ext.define("Magice.base.Model", {
       if (data.message) {
         msg = data.message;
       }
+      errors = null;
       if (form && data.errors) {
+        errors = '<div class="ui message warning">';
+        errors = errors + '<ul>';
         for (key in data.errors) {
           field = form.getForm().findField(key);
+          _ref = data.errors[key];
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            error = _ref[_i];
+            errors += '<li>' + error + '</li>';
+          }
           if (field) {
             field.reset();
             field.markInvalid(data.errors[key]);
           }
         }
+        errors += '</ul></div>';
       }
     }
     if (comp.disableErrorMessage !== true) {
-      Ext.Msg.error(title, msg);
+      if (errors) {
+        Ext.Msg.error(msg, errors);
+      } else {
+        Ext.Msg.error(title, msg);
+      }
     }
     if (comp.preventRejectOnError !== true && comp.isVisible() === false) {
       return rec.reject();

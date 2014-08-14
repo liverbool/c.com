@@ -68,7 +68,7 @@ abstract class DigitalController extends RestController
      */
     protected function getServer($id)
     {
-        return $this->findNotFound('do.repository.server', $id);
+        return $this->getDomainManager()->findNotFound('do.repository.server', $id);
     }
 
     /**
@@ -89,7 +89,7 @@ abstract class DigitalController extends RestController
         return $this->get('do.repository.server')->findByName($name);
     }
 
-    protected function checkAvailibleName($name)
+    protected function checkAvailableName($name)
     {
         if ($this->getServerByName($name)) {
             throw new \InvalidArgumentException(sprintf("This name (%s) is already in use.", $name));

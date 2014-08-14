@@ -49,8 +49,8 @@ Ext.define('Magice.Cloud.view.server.CreateController', {
     }
     this.model.set('summary', {
       hostname: steps.hostname.data,
-      size: steps.size.data[0],
-      image: steps.image.data[0],
+      size: steps.size.data[0].data,
+      image: steps.image.data[0].data,
       features: steps.feature.data
     });
     return win.setActiveItem(2);
@@ -71,15 +71,15 @@ Ext.define('Magice.Cloud.view.server.CreateController', {
         if (f.data.slug === 'backups') {
           backups = true;
         }
-        if (f.slug === 'private_networking') {
+        if (f.data.slug === 'private_networking') {
           privateNetworking = true;
         }
       }
     }
     data = {
       name: summary.hostname,
-      size: summary.size.data.slug,
-      image: summary.image.data.slug,
+      size: summary.size.slug,
+      image: summary.image.slug,
       ipv6: ipv6,
       backups: backups,
       privateNetworking: privateNetworking
@@ -95,7 +95,10 @@ Ext.define('Magice.Cloud.view.server.CreateController', {
       })(this),
       failure: (function(_this) {
         return function(response) {
-          return operation.failure(response);
+          var win;
+          operation.failure(response);
+          win = me.up('window');
+          return _this.showItems(win, ['#btnBack']);
         };
       })(this)
     });
@@ -104,16 +107,20 @@ Ext.define('Magice.Cloud.view.server.CreateController', {
     return this.lookup('creatorWindow').getOperation();
   },
   setupCreator: function(rs) {
+    var r;
     if (rs === null) {
       this.model.set('creatorsImages', null);
       this.clearData('creatorsSizes');
       this.clearData('creatorsDistributors');
       return this.clearData('creatorsFeatures');
     } else {
-      this.model.set('creatorsImages', rs[0].images);
-      this.loadData('creatorsSizes', rs[0].sizes);
-      this.loadData('creatorsDistributors', rs[0].dists);
-      return this.loadData('creatorsFeatures', rs[0].features);
+      r = rs[0];
+      this.model.set('creatorsImages', r.get('images'));
+      this.loadData('creatorsSizes', r.get('sizes'));
+      this.loadData('creatorsDistributors', r.get('dists'));
+      this.loadData('creatorsFeatures', r.get('features'));
+      this.loadData('creatorsPrivateImages', r.get('privates'));
+      return this.loadData('creatorsBackupImages', r.get('backups'));
     }
   },
   setStepActive: function(data, step, active) {
@@ -124,23 +131,52 @@ Ext.define('Magice.Cloud.view.server.CreateController', {
     steps[step].data = data;
     return this.model.set('steps', steps);
   },
+  deselectAllOfChildGrid: function(parent, current) {
+    var grid, _i, _len, _ref, _results;
+    _ref = parent.query('grid');
+    _results = [];
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      grid = _ref[_i];
+      if (grid.id !== current.id) {
+        _results.push(grid.getSelectionModel().deselectAll(true));
+      } else {
+        _results.push(void 0);
+      }
+    }
+    return _results;
+  },
   'on.creator.hostname.change': function(me) {
     return this.setStepActive(me.value, 'hostname', me.value && me.isValid());
   },
   'on.creator.dist.selectionchange': function(sm, rs) {
     var images;
     images = this.model.get('creatorsImages');
-    this.loadData('creatorsDistributorsImages', images[rs[0].slug]);
+    this.loadData('creatorsDistributorsImages', images[rs[0].get('slug')]);
     return this.setStepActive(null, 'image', false);
   },
   'on.creator.dist.image.selectionchange': function(sm, rs) {
+    this.deselectAllOfChildGrid(sm.view.up('creator-image'), sm.view.grid);
+    return this.setStepActive(rs, 'image', rs.length);
+  },
+  'on.creator.private.image.selectionchange': function(sm, rs) {
+    this.deselectAllOfChildGrid(sm.view.up('creator-image'), sm.view.grid);
+    return this.setStepActive(rs, 'image', rs.length);
+  },
+  'on.creator.backup.image.selectionchange': function(sm, rs) {
+    this.deselectAllOfChildGrid(sm.view.up('creator-image'), sm.view.grid);
     return this.setStepActive(rs, 'image', rs.length);
   },
   'on.creator.size.selectionchange': function(sm, rs) {
     return this.setStepActive(rs, 'size', rs.length);
   },
   'on.creator.feature.selectionchange': function(sm, rs) {
-    return this.setStepActive(rs, 'feature', rs.length);
+    this.setStepActive(rs, 'feature', rs.length);
+    sm.view.el.select('div.item input').set({
+      checked: null
+    }, false);
+    return sm.view.el.select('div.x-item-selected input').set({
+      checked: true
+    }, false);
   },
   'on.create.ended': function(res) {
     return this.load('servers');

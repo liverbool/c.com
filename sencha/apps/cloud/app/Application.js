@@ -4,7 +4,9 @@
  Ext.application(). This is the ideal place to handle application launch and initialization
  details.
  */
-var sprintf;
+var MAGICE_URL, sprintf;
+
+MAGICE_URL = 'http://c.com/web';
 
 sprintf = _.string.sprintf;
 
@@ -25,7 +27,7 @@ Ext.define('Magice.Application', {
     return console.log(response.json);
   },
   statics: {
-    URL: 'http://c.com',
+    URL: MAGICE_URL,
     path: function(path) {
       return Magice.Application.URL + path;
     },
@@ -69,6 +71,12 @@ Ext.humanize = {
     } else {
       return moment.duration(moment(b).diff(a)).humanize();
     }
+  },
+  format: function(v, format, input) {
+    if (input === 'mb') {
+      v = v * Math.pow(1024, 2);
+    }
+    return numeral(v).format(format);
   }
 };
 
@@ -121,6 +129,7 @@ Ext.Ajax.on('beforerequest', function(conn, options) {
   if (parameters) {
     options.url = Ext.util.bindParameter(options.url, parameters);
   }
+  console.log(arguments);
   if (!Ext.util.isFullyUrl(options.url)) {
     options.url = Magice.Application.path(options.url);
   }

@@ -9,7 +9,7 @@ Ext.application({
     extend: 'Magice.Application',
 
     autoCreateViewport: 'Magice.Main.view.View',
-	
+
     //-------------------------------------------------------------------------
     // Most customizations should be made to Magice.Application. If you need to
     // customize this file, doing so below this section reduces the likelihood

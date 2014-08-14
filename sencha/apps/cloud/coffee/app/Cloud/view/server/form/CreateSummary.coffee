@@ -11,7 +11,7 @@ Ext.define 'Magice.Cloud.view.server.form.CreateSummary',
             feature: 'Feature'
         emptyFeature:
             title: 'No feature selected!'
-            message: 'You will create server with no feature selected. Well, We recomend you to select Enable VirtIO.'
+            message: 'You will create server with no feature selected.'
 
     bind:
         data: bindTo: '{summary}', deep: yes
@@ -26,7 +26,7 @@ Ext.define 'Magice.Cloud.view.server.form.CreateSummary',
             '<div>'
                 '<div><b>{size.slug}</b></div>'
                 '<div><b>CPU:</b> {size.vcpus}GB</div>'
-                '<div><b>Memory:</b> {size.memory}MB</div>'
+                '<div><b>Memory:</b> {size.memory:this.format}</div>'
                 '<div><b>SSD Disk:</b> {size.disk}GB</div>'
                 '<div><b>Transfer:</b> {size.transfer}MB</div>'
                 '<div><b>Hourly Price:</b> {size.priceHourly}</div>'
@@ -38,7 +38,7 @@ Ext.define 'Magice.Cloud.view.server.form.CreateSummary',
             '<h4 class="ui header">' +@locale.title.feature+ '</h4>'
             '<div class="ui list">'
                 '<tpl for="features">'
-                    '<div class="item"><i class="icon checkmark"></i> {name}</div>'
+                    '<div class="item"><i class="icon checkmark"></i> {data.name}</div>'
                 '</tpl>'
             '</div>'
             '<tpl if="!features">'
@@ -47,6 +47,7 @@ Ext.define 'Magice.Cloud.view.server.form.CreateSummary',
                     @locale.emptyFeature.message
                 '</div>'
             '</tpl>'
+            format: (v) -> Ext.humanize.format v, '0b', 'mb'
         ]
 
         @callParent arguments

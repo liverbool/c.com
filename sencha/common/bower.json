@@ -4,7 +4,7 @@
   "main": "public/javascripts/app.js",
   "dependencies": {
     "jquery": "~2.1.1",
-    "semantic-ui": "~0.18.0",
+    "semantic-ui": "http://beta.semantic-ui.com/build/semantic.zip",
     "font-awesome": "~4.1.0",
     "moment": "~2.7.0",
     "numeral": "~1.5.3",
@@ -14,8 +14,8 @@
   "overrides": {
     "semantic-ui": {
       "main": [
-        "build/packaged/css/semantic.css",
-        "build/packaged/javascript/semantic.js"
+        "packaged/definitions/css/semantic.css",
+        "packaged/definitions/javascript/semantic.js"
       ]
     },
     "underscore.string": {

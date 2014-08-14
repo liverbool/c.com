@@ -4,6 +4,8 @@ Ext.define 'Magice.Cloud.view.server.ListSnapshotsController',
     'on.list.snapshots.refresh': -> @model.get('snapshots').reload()
 
     'on.list.snapshots.edit': (ed, cell) ->
+        return unless ed.editing
+
         win = ed.grid.up 'window'
         title = win.title
 

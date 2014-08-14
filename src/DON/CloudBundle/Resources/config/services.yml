@@ -14,8 +14,10 @@ parameters:
     do.class.listener.entity_acl: DON\CloudBundle\EventListener\EntityAclListener
     do.class.entity.server: DON\CloudBundle\Entity\Server
     do.class.entity.sshkey: DON\CloudBundle\Entity\SSHKey
+    do.class.entity.domain: DON\CloudBundle\Entity\Domain
     do.class.repository.server: DON\CloudBundle\Entity\ServerRepository
     do.class.repository.sshkey: DON\CloudBundle\Entity\SSHKeyRepository
+    do.class.repository.domain: DON\CloudBundle\Entity\DomainRepository
 
 services:
 
@@ -32,7 +34,7 @@ services:
     do.adapter:
         class: %do.class.adapter%
         public: false
-        arguments: [a3e8d05456f669831deab53ccf22aab4873da7ee54cc7c46de3deb5d88cb68e0, @do.exception]
+        arguments: [a3e8d05456f669831deab53ccf22aab4873da7ee54cc7c46de3deb5d88cb68e0, null, @do.exception]
 
     do.factory:
         class: %do.class.factory%
@@ -94,3 +96,9 @@ services:
         factory_service: doctrine.orm.entity_manager
         factory_method: getRepository
         arguments: [ %do.class.entity.sshkey% ]
+
+    do.repository.domain:
+        class: %do.class.repository.domain%
+        factory_service: doctrine.orm.entity_manager
+        factory_method: getRepository
+        arguments: [ %do.class.entity.domain% ]

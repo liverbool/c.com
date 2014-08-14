@@ -2,17 +2,19 @@
 
 namespace DON\CloudBundle\Controller;
 
+use DigitalOceanV2\Exception\ResponseException;
 use DON\CloudBundle\Action\Creator;
 use DON\CloudBundle\DoApi\Entity\Droplet;
 use DON\CloudBundle\Entity\Server;
 use DON\CloudBundle\Entity\ServerError;
-use DON\CloudBundle\Exception\ResponseException;
 use Magice\Bundle\RestBundle\Annotation as Rest;
-use Magice\Bundle\RestBundle\Exception\EntityValidatorException;
+use Magice\Bundle\RestBundle\Domain\ManagerException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
-
+/**
+ * Class DropletsController
+ */
 class DropletsController extends DigitalController
 {
     private function api()
@@ -28,11 +30,11 @@ class DropletsController extends DigitalController
             $node = $this->api()->getById($idOrDroplet);
         }
 
-        $server = $server ? : $this->getServer($node->id);
+        $server = $server ?: $this->getServer($node->id);
 
         // store original kernel
         if (!$server->getKernel()) {
-            $server->setKernel((array) $node->kernel);
+            $server->setKernel((array)$node->kernel);
         }
 
         $server->setName($node->name)
@@ -41,15 +43,24 @@ class DropletsController extends DigitalController
             ->setPriceMonthly($node->size->priceMonthly)
             ->setStatus($node->status)
             ->setSnapshots($node->snapshotIds)
-            ->setImage((array) $node->image)
-            ->save($this->getEntityManager(), $this->get('validator'));
+            ->setImage((array)$node->image);
+
+        if (!empty($node->networks)) {
+            foreach ($node->networks as $net) {
+                if (empty($net->cidr) && $net->type === 'public') {
+                    $server->setIp($net->ipAddress);
+                }
+            }
+        }
+
+        $this->getDomainManager()->validate($server)->save();
 
         return new Droplet($node, $server);
     }
 
     private function rename($id, $name)
     {
-        $name   = $this->checkAvailibleName(strtolower($name));
+        $name = $this->checkAvailableName(strtolower($name));
         $action = $this->api()->rename($id, $name);
 
         $this->sync($action->resourceId);
@@ -59,7 +70,7 @@ class DropletsController extends DigitalController
 
     private function create(Creator $creator)
     {
-        $creator->setName($this->checkAvailibleName($creator->getName()));
+        $creator->setName($this->checkAvailableName($creator->getName()));
 
         $en = new Server();
         $dp = $this->actionCreator('do.droplet', 'create', $creator);
@@ -76,7 +87,7 @@ class DropletsController extends DigitalController
     {
         try {
             $rq = $this->get('request');
-            $em = $this->getEntityManager();
+            $dm = $this->getDomainManager();
             $en = new ServerError();
 
             $en->setCreator($creator);
@@ -89,7 +100,8 @@ class DropletsController extends DigitalController
             $en->setRequest($rq);
             $en->setTrace($e->getTraceAsString());
             $en->setServer($this->getServerByName($creator->getName()));
-            $en->save($em);
+
+            $dm->save($en);
         } catch (\Exception $e) {
         }
     }
@@ -103,6 +115,7 @@ class DropletsController extends DigitalController
         }
 
         $nodes = array();
+        $dm = $this->getDomainManager();
 
         foreach ($servers as $server) {
             try {
@@ -112,7 +125,7 @@ class DropletsController extends DigitalController
                 // to make sure droplet is exist
                 switch ($exception->getErrorId()) {
                     case 'NOT_FOUND':
-                        $server->remove($this->getEntityManager());
+                        $dm->delete($server);
                         $node = null;
                         break;
 
@@ -143,8 +156,8 @@ class DropletsController extends DigitalController
 
     /**
      * @Rest\View()
-     * @Rest\Get("servers/{id}")
-     * @Rest\Acl("is_granted('OWNER', server)")
+     * @Rest\Get("servers/{id}", requirements={"id" = "\d+"})
+     * @Rest\Acl({"OWNER", "server"})
      */
     public function readAction(Server $server)
     {
@@ -159,11 +172,12 @@ class DropletsController extends DigitalController
     {
         try {
             // https://github.com/toin0u/DigitalOceanV2/issues/16
-            error_reporting(0);
+            //error_reporting(0);
             //return $this->mock('droplet_created.json');
             return $this->create($creator);
-        } catch (EntityValidatorException $e) {
+        } catch (ManagerException $e) {
             $this->logCreatorError($creator, $e);
+
             return $e->getErrors();
         } catch (\Exception $e) {
             $this->logCreatorError($creator, $e);
@@ -174,7 +188,7 @@ class DropletsController extends DigitalController
     /**
      * @Rest\View(statusCode=204, headerId="X-Action-Id")
      * @Rest\Delete("servers/{id}", requirements={"id" = "\d+"})
-     * @Rest\Acl("is_granted('OWNER', server)")
+     * @Rest\Acl({"OWNER", "server"})
      */
     public function deleteAction(Server $server)
     {
@@ -189,7 +203,7 @@ class DropletsController extends DigitalController
      * -------------------------------------------------
      * @Rest\View(statusCode=204, headerId="X-Action-Id")
      * @Rest\Put("servers/{id}", requirements={"id" = "\d+"})
-     * @Rest\Acl("is_granted('OWNER', server)")
+     * @Rest\Acl({"OWNER", "server"})
      */
     public function updateAction(Server $server, Request $request)
     {
@@ -199,6 +213,7 @@ class DropletsController extends DigitalController
 
             case 'rename':
                 $action = $this->rename($server->getId(), $request->get('name'));
+
                 return array('id' => $action->id);
 
             default:
@@ -211,7 +226,7 @@ class DropletsController extends DigitalController
      * -------------------------------------------------
      * @Rest\View()
      * @Rest\Get("servers/{id}/actions", requirements={"id" = "\d+"})
-     * @Rest\Acl("is_granted('OWNER', server)")
+     * @Rest\Acl({"OWNER", "server"})
      */
     public function actionsAction(Server $server)
     {
@@ -223,7 +238,7 @@ class DropletsController extends DigitalController
      * -------------------------------------------------
      * @Rest\View(statusCode=204, headerId="X-Action-Id")
      * @Rest\Put("servers/{id}/restore/{imageId}", requirements={"id" = "\d+", "imageId" = "\d+"})
-     * @Rest\Acl("is_granted('OWNER', server)")
+     * @Rest\Acl({"OWNER", "server"})
      */
     public function restoreAction(Server $server, $imageId)
     {
@@ -235,7 +250,7 @@ class DropletsController extends DigitalController
      * -------------------------------------------------
      * @Rest\View(statusCode=204, headerId="X-Action-Id")
      * @Rest\Put("servers/{id}/reboot", requirements={"id" = "\d+"})
-     * @Rest\Acl("is_granted('OWNER', server)")
+     * @Rest\Acl({"OWNER", "server"})
      */
     public function rebootAction(Server $server)
     {
@@ -247,7 +262,7 @@ class DropletsController extends DigitalController
      * -------------------------------------------------
      * @Rest\View(statusCode=204, headerId="X-Action-Id")
      * @Rest\Put("servers/{id}/rebuild/{imageId}", requirements={"id" = "\d+", "imageId" = "\d+"})
-     * @Rest\Acl("is_granted('OWNER', server)")
+     * @Rest\Acl({"OWNER", "server"})
      */
     public function rebuildAction(Server $server, $imageId)
     {
@@ -259,7 +274,7 @@ class DropletsController extends DigitalController
      * -------------------------------------------------
      * @Rest\View(statusCode=204, headerId="X-Action-Id")
      * @Rest\Put("servers/{id}/cycle", requirements={"id" = "\d+"})
-     * @Rest\Acl("is_granted('OWNER', server)")
+     * @Rest\Acl({"OWNER", "server"})
      */
     public function powerCycleAction(Server $server)
     {
@@ -271,7 +286,7 @@ class DropletsController extends DigitalController
      * -------------------------------------------------
      * @Rest\View(statusCode=204, headerId="X-Action-Id")
      * @Rest\Put("servers/{id}/poweroff", requirements={"id" = "\d+"})
-     * @Rest\Acl("is_granted('OWNER', server)")
+     * @Rest\Acl({"OWNER", "server"})
      */
     public function powerOffAction(Server $server)
     {
@@ -283,7 +298,7 @@ class DropletsController extends DigitalController
      * -------------------------------------------------
      * @Rest\View(statusCode=204, headerId="X-Action-Id")
      * @Rest\Put("servers/{id}/poweron", requirements={"id" = "\d+"})
-     * @Rest\Acl("is_granted('OWNER', server)")
+     * @Rest\Acl({"OWNER", "server"})
      */
     public function powerOnAction(Server $server)
     {
@@ -295,7 +310,7 @@ class DropletsController extends DigitalController
      * -------------------------------------------------
      * @Rest\View(statusCode=204, headerId="X-Action-Id")
      * @Rest\Put("servers/{id}/shutdown", requirements={"id" = "\d+"})
-     * @Rest\Acl("is_granted('OWNER', server)")
+     * @Rest\Acl({"OWNER", "server"})
      */
     public function shutdownAction(Server $server)
     {
@@ -307,7 +322,7 @@ class DropletsController extends DigitalController
      * -------------------------------------------------
      * @Rest\View(statusCode=204, headerId="X-Action-Id")
      * @Rest\Put("servers/{id}/resetpwd", requirements={"id" = "\d+"})
-     * @Rest\Acl("is_granted('OWNER', server)")
+     * @Rest\Acl({"OWNER", "server"})
      */
     public function resetPasswordAction(Server $server)
     {
@@ -320,7 +335,7 @@ class DropletsController extends DigitalController
      * -------------------------------------------------
      * @Rest\View(statusCode=204, headerId="X-Action-Id")
      * @Rest\Put("servers/{id}/resize", requirements={"id" = "\d+"})
-     * @Rest\Acl("is_granted('OWNER', server)")
+     * @Rest\Acl({"OWNER", "server"})
      */
     public function resizeAction(Server $server, Request $request)
     {
@@ -332,7 +347,7 @@ class DropletsController extends DigitalController
      * -------------------------------------------------
      * @Rest\View(statusCode=204, headerId="X-Action-Id")
      * @Rest\Put("servers/{id}/snapshot", requirements={"id" = "\d+"})
-     * @Rest\Acl("is_granted('OWNER', server)")
+     * @Rest\Acl({"OWNER", "server"})
      */
     public function snapshotAction(Server $server, Request $request)
     {
@@ -344,7 +359,7 @@ class DropletsController extends DigitalController
      * -------------------------------------------------
      * @Rest\View(statusCode=201)
      * @Rest\Get("servers/{id}/snapshots", requirements={"id" = "\d+"})
-     * @Rest\Acl("is_granted('OWNER', server)")
+     * @Rest\Acl({"OWNER", "server"})
      */
     public function snapshotsAction(Server $server)
     {
@@ -356,7 +371,7 @@ class DropletsController extends DigitalController
      * -------------------------------------------------
      * @Rest\View(statusCode=200)
      * @Rest\Get("servers/{id}/backups", requirements={"id" = "\d+"})
-     * @Rest\Acl("is_granted('OWNER', server)")
+     * @Rest\Acl({"OWNER", "server"})
      */
     public function backupsAction(Server $server)
     {
@@ -368,7 +383,7 @@ class DropletsController extends DigitalController
      * -------------------------------------------------
      * @Rest\View(statusCode=200)
      * @Rest\Get("servers/{id}/kernels", requirements={"id" = "\d+"})
-     * @Rest\Acl("is_granted('OWNER', server)")
+     * @Rest\Acl({"OWNER", "server"})
      */
     public function kernelsAction(Server $server)
     {
@@ -380,7 +395,7 @@ class DropletsController extends DigitalController
      * -------------------------------------------------
      * @Rest\View(statusCode=204, headerId="X-Action-Id")
      * @Rest\Put("servers/{id}/kernels/{kernelId}", requirements={"id" = "\d+"})
-     * @Rest\Acl("is_granted('OWNER', server)")
+     * @Rest\Acl({"OWNER", "server"})
      */
     public function changeKernelAction(Server $server, $kernelId)
     {
@@ -406,7 +421,7 @@ class DropletsController extends DigitalController
      * -------------------------------------------------
      * @Rest\View(statusCode=204, headerId="X-Action-Id")
      * @Rest\Put("servers/{id}/enableipv6", requirements={"id" = "\d+"})
-     * @Rest\Acl("is_granted('OWNER', server)")
+     * @Rest\Acl({"OWNER", "server"})
      */
     public function enableIPv6Action(Server $server)
     {
@@ -418,7 +433,7 @@ class DropletsController extends DigitalController
      * -------------------------------------------------
      * @Rest\View(statusCode=204, headerId="X-Action-Id")
      * @Rest\Put("servers/{id}/enableprivatenetworking", requirements={"id" = "\d+"})
-     * @Rest\Acl("is_granted('OWNER', server)")
+     * @Rest\Acl({"OWNER", "server"})
      */
     public function enablePrivateNetworkingAction(Server $server)
     {
@@ -432,7 +447,7 @@ class DropletsController extends DigitalController
      * -------------------------------------------------
      * @Rest\View(statusCode=204, headerId="X-Action-Id")
      * @Rest\Put("servers/{id}/disablebackups", requirements={"id" = "\d+"})
-     * @Rest\Acl("is_granted('OWNER', server)")
+     * @Rest\Acl({"OWNER", "server"})
      */
     public function disableBackupsAction(Server $server)
     {
@@ -446,7 +461,7 @@ class DropletsController extends DigitalController
      * -------------------------------------------------
      * @Rest\View()
      * @Rest\Get("servers/{id}/sync", requirements={"id" = "\d+"})
-     * @Rest\Acl("is_granted('OWNER', server)")
+     * @Rest\Acl({"OWNER", "server"})
      */
     public function syncAction(Server $server)
     {
@@ -454,27 +469,27 @@ class DropletsController extends DigitalController
     }
 
     /**
-     * Rest\View()
-     * Rest\Get("servers/test")
+     * @Rest\View()
+     * @Rest\Get("servers/test")
      */
     public function testAction()
     {
-        $validator = $this->get('validator');
-        $server    = new Server();
+        $server = new Server();
 
         try {
 
             $server
-                ->setId(1586418)
+                ->setId(2101380)
                 ->setName('Test')
-                ->setSize('somting')
+                ->setSize('something')
                 ->setStatus('new')
                 ->setPriceHourly(0.7)
-                ->setPriceMonthly(0.7)
-                ->save($this->getEntityManager(), $validator);
+                ->setPriceMonthly(0.7);
+
+            $this->getDomainManager()->save($server);
 
             return $server;
-        } catch (EntityValidatorException $e) {
+        } catch (ManagerException $e) {
             return $e->getErrors();
         } catch (\Exception $exception) {
             throw $exception;

@@ -61,7 +61,7 @@ Ext.define 'Magice.Cloud.view.image.Controller',
 
         imagelist = @lookup 'imagelist'
         imagelist.editing.cancelEdit()
-        imagelist.editing.startEdit rec, 2
+        imagelist.editing.startEdit rec, 0
 
     'on.destroy': (btn) -> @callAction 'on.action.destroyimage', btn
 

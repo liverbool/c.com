@@ -4,6 +4,8 @@ Ext.define 'Magice.Cloud.view.server.ListBackupsController',
     'on.list.backups.refresh': -> @model.get('backups').reload()
 
     'on.list.backups.edit': (ed, cell) ->
+        return unless ed.editing
+
         win = ed.grid.up 'window'
         title = win.title
 

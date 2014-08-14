@@ -3,9 +3,23 @@ Ext.define("Ext.extend.Msg", {
 }, function() {
   Ext.Msg.shadow = false;
   Ext.Msg.error = function(title, message, fn, scope) {
+    var e, res;
     if (Ext.isString(title)) {
       title = {
         title: title,
+        message: message
+      };
+    }
+    if (Ext.isObject(title) && title['getResponseHeader']) {
+      try {
+        res = Ext.JSON.decode(title.responseText);
+        message = res.message;
+      } catch (_error) {
+        e = _error;
+        message = title.statusText;
+      }
+      title = {
+        title: '[' + title.status + '] ' + title.statusText,
         message: message
       };
     }

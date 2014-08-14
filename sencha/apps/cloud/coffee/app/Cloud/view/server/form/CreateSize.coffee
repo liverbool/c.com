@@ -13,24 +13,28 @@ Ext.define 'Magice.Cloud.view.server.form.CreateSize',
             menuDisabled: yes
             text: 'CPU' #locale
             dataIndex: 'vcpus'
+            renderer: (v) -> v + 'GB'
         }
         {
             sortable: no
             menuDisabled: yes
             text: 'Memory' #locale
             dataIndex: 'memory'
+            renderer: (v) -> Ext.humanize.format v, '0b', 'mb'
         }
         {
             sortable: no
             menuDisabled: yes
             text: 'SSD Disk' #locale
             dataIndex: 'disk'
+            renderer: (v) -> v + 'GB'
         }
         {
             sortable: no
             menuDisabled: yes
             text: 'Transfer' #locale
             dataIndex: 'transfer'
+            renderer: (v) -> v + 'GB'
         }
         {
             sortable: no

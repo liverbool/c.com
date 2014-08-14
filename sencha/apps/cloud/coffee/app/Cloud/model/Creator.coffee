@@ -9,4 +9,7 @@ Ext.define 'Magice.Cloud.model.Creator',
         'features'
         'images'
         'dists'
+        'backups'
+        'privates'
+        'shares'
     ]

@@ -12,16 +12,28 @@ use Symfony\Component\Security\Core\User\UserInterface;
  */
 class SSHKeyRepository extends EntityRepository
 {
-    public function findByUser(UserInterface $user)
-    {
-        return $this->findBy(array('user' => $user));
-    }
-
+    /**
+     * @param $name
+     * @return SSHKey[]
+     */
     public function findByName($name)
     {
         return $this->findBy(array('name' => $name));
     }
 
+    /**
+     * @param UserInterface $user
+     * @return SSHKey[]
+     */
+    public function findByUser(UserInterface $user)
+    {
+        return $this->findBy(array('user' => $user));
+    }
+
+    /**
+     * @param UserInterface $user
+     * @return SSHKey[]
+     */
     public function findDeletedByUser(UserInterface $user)
     {
         return $this->findBy(array('deleted' => true, 'user' => $user));

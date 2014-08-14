@@ -22,9 +22,12 @@ Ext.define 'Magice.Cloud.view.server.form.Create',
     dockedItems: xtype: 'creator-dockedbar'
 
     activeItem: 1
+
     layout:
         type: 'card'
         deferredRender: yes
+
+    listeners: show: -> @maximize yes
 
     defaults:
         xtype: 'container'

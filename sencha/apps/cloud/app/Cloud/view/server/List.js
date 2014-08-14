@@ -49,33 +49,21 @@ Ext.define('Magice.Cloud.view.server.List', {
       }
     }, {
       text: 'Memory',
-      dataIndex: 'size',
+      dataIndex: 'memory',
       renderer: function(v) {
-        if (v) {
-          return v.memory + 'MB';
-        } else {
-          return null;
-        }
+        return Ext.humanize.format(v, '0b', 'mb');
       }
     }, {
       text: 'SSD Disk',
-      dataIndex: 'size',
+      dataIndex: 'disk',
       renderer: function(v) {
-        if (v) {
-          return v.disk + 'GB';
-        } else {
-          return null;
-        }
+        return v + 'GB';
       }
     }, {
       text: 'CPU',
-      dataIndex: 'size',
+      dataIndex: 'vcpus',
       renderer: function(v) {
-        if (v && v.slug) {
-          return v.slug.toUpperCase();
-        } else {
-          return null;
-        }
+        return v + 'GB';
       }
     }, {
       hidden: true,
@@ -83,7 +71,7 @@ Ext.define('Magice.Cloud.view.server.List', {
       dataIndex: 'locked'
     }, {
       text: 'Backups',
-      dataIndex: 'isEnableBackups'
+      dataIndex: 'backupsEnabled'
     }, {
       text: 'Status',
       dataIndex: 'status',
