@@ -2,7 +2,7 @@ Ext.define 'Magice.Cloud.view.domain.form.CNAME',
     extend: 'Ext.window.Window'
     xtype: 'dns-form-cname'
 
-    title: 'Add Record CNAME'
+    bind: title: 'Add Record CNAME - {record.name}'
 
     width: 400
 

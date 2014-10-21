@@ -30,7 +30,7 @@ Ext.define 'Magice.Cloud.view.server.List',
         {
             text: 'Created'
             dataIndex: 'createdAt'
-            renderer: Ext.humanize.date
+            renderer: humanize.date
         }
         {
             width: 150
@@ -45,7 +45,7 @@ Ext.define 'Magice.Cloud.view.server.List',
         {
             text: 'Memory' #locale
             dataIndex: 'memory'
-            renderer: (v) -> Ext.humanize.format v, '0b', 'mb'
+            renderer: (v) -> humanize.format v, '0b', 'mb'
         }
         {
             text: 'SSD Disk' #locale
@@ -69,6 +69,6 @@ Ext.define 'Magice.Cloud.view.server.List',
         {
             text: 'Status' #locale
             dataIndex: 'status'
-            renderer: Ext.humanize.text
+            renderer: humanize.text
         }
     ]

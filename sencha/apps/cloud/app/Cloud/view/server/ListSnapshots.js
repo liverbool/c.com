@@ -55,11 +55,11 @@ Ext.define('Magice.Cloud.view.server.ListSnapshots', {
           hidden: true,
           text: 'Created At',
           dataIndex: 'createdAt',
-          renderer: Ext.humanize.datetime
+          renderer: humanize.datetime
         }, {
           text: 'Created',
           dataIndex: 'createdAt',
-          renderer: Ext.humanize.duration
+          renderer: humanize.duration
         }
       ],
       tbar: [

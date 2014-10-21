@@ -23,7 +23,7 @@ Ext.define('Magice.Cloud.view.server.form.CreateSize', {
       text: 'Memory',
       dataIndex: 'memory',
       renderer: function(v) {
-        return Ext.humanize.format(v, '0b', 'mb');
+        return humanize.format(v, '0b', 'mb');
       }
     }, {
       sortable: false,

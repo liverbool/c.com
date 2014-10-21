@@ -4,11 +4,15 @@
  Ext.application(). This is the ideal place to handle application launch and initialization
  details.
  */
-var MAGICE_URL, sprintf;
+var MAGICE_URL, endsWith, humanize, sprintf, vsprintf;
 
 MAGICE_URL = 'http://c.com/web';
 
 sprintf = _.string.sprintf;
+
+vsprintf = _.string.vsprintf;
+
+endsWith = _.string.endsWith;
 
 Ext.define('Magice.Application', {
   extend: 'Ext.app.Application',
@@ -39,7 +43,7 @@ Ext.define('Magice.Application', {
   }
 });
 
-Ext.humanize = {
+humanize = {
   text: function(v) {
     return _.string.humanize(v);
   },

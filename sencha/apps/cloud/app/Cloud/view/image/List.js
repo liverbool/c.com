@@ -52,12 +52,12 @@ Ext.define('Magice.Cloud.view.image.List', {
       }, {
         text: 'Type',
         dataIndex: 'type',
-        renderer: Ext.humanize.text
+        renderer: humanize.text
       }, {
         flex: 1,
         text: 'created',
         dataIndex: 'createdAt',
-        renderer: Ext.humanize.datetime
+        renderer: humanize.datetime
       }
     ];
     return this.callParent(arguments);

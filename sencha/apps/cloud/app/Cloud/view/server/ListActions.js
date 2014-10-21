@@ -39,25 +39,25 @@ Ext.define('Magice.Cloud.view.server.ListActions', {
         flex: 1,
         text: 'Event',
         dataIndex: 'type',
-        renderer: Ext.humanize.text
+        renderer: humanize.text
       }, {
         hidden: true,
         text: 'Started At',
         dataIndex: 'startedAt',
-        renderer: Ext.humanize.datetime
+        renderer: humanize.datetime
       }, {
         hidden: true,
         text: 'Completed At',
         dataIndex: 'completedAt',
-        renderer: Ext.humanize.datetime
+        renderer: humanize.datetime
       }, {
         text: 'Status',
         dataIndex: 'status',
-        renderer: Ext.humanize.text
+        renderer: humanize.text
       }, {
         text: 'Started',
         dataIndex: 'startedAt',
-        renderer: Ext.humanize.duration
+        renderer: humanize.duration
       }, {
         text: 'Duration',
         dataIndex: 'duration'

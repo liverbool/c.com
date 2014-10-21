@@ -20,7 +20,7 @@ Ext.define 'Magice.Cloud.view.server.form.CreateSize',
             menuDisabled: yes
             text: 'Memory' #locale
             dataIndex: 'memory'
-            renderer: (v) -> Ext.humanize.format v, '0b', 'mb'
+            renderer: (v) -> humanize.format v, '0b', 'mb'
         }
         {
             sortable: no

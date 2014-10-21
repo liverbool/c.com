@@ -18,6 +18,6 @@ Ext.define 'Magice.Cloud.model.Action',
         }
         {
             name: 'duration'
-            convert: (v, r) -> Ext.humanize.diff r.get('startedAt'), r.get('completedAt')
+            convert: (v, r) -> humanize.diff r.get('startedAt'), r.get('completedAt')
         }
     ]

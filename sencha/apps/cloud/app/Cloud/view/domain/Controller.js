@@ -115,15 +115,32 @@ Ext.define('Magice.Cloud.view.domain.Controller', {
       failure: Ext.Msg.error
     });
   },
-  getRecordForm: function(name, config) {
+  getRecordForm: function(name) {
     var win;
-    win = this.view.add(Ext.widget(name, config));
+    win = this.view.add(Ext.widget(name, {
+      viewModel: {
+        data: {
+          dns: new Magice.Cloud.model.Record
+        }
+      }
+    }));
     return win.show();
   },
   'on.dns.add': function(btn) {
     return this.getRecordForm('dns-form-' + btn.dnstype);
   },
   'on.dns.save': function(btn) {
+    var data, win;
+    win = btn.up('window');
+    data = win.viewModel.data.dns.data;
+    if (!data.data) {
+      return alert(btn.alert | 'Data cannot be empty.');
+    }
+    if (btn.dnstype === 'mx' || btn.dnstype === 'ns') {
+      if (!endsWith(data.data, '.')) {
+        return alert('Data needs to end with a dot (.)');
+      }
+    }
     btn.setLoading('Adding Record ...');
     return Ext.Ajax.request({
       url: '/cloud/dns/[domain]/' + btn.dnstype,
@@ -131,12 +148,14 @@ Ext.define('Magice.Cloud.view.domain.Controller', {
       parameters: {
         domain: this.model.get('record').get('id')
       },
+      params: data,
       callback: function() {
         return btn.setLoading(false);
       },
       success: (function(_this) {
         return function() {
-          return _this.model.get('records').reload();
+          _this.model.get('records').reload();
+          return win.hide();
         };
       })(this),
       failure: Ext.Msg.error

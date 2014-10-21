@@ -83,19 +83,32 @@ Ext.define 'Magice.Cloud.view.domain.Controller',
             success: => @model.get('records').reload()
             failure: Ext.Msg.error
 
-    getRecordForm: (name, config) ->
-        win = @view.add(Ext.widget(name, config))
+    getRecordForm: (name) ->
+        win = @view.add(
+            Ext.widget name, viewModel:
+                data: dns: new Magice.Cloud.model.Record
+        )
         win.show()
 
     'on.dns.add': (btn) -> @getRecordForm 'dns-form-' + btn.dnstype
     'on.dns.save': (btn) ->
-        btn.setLoading 'Adding Record ...'
+        win = btn.up 'window'
+        data = win.viewModel.data.dns.data
 
+        if !data.data
+            return alert btn.alert | 'Data cannot be empty.'
+
+        if btn.dnstype is 'mx' or btn.dnstype is 'ns'
+            if !endsWith data.data, '.'
+                return alert 'Data needs to end with a dot (.)'
+
+        btn.setLoading 'Adding Record ...'
         Ext.Ajax.request
             url: '/cloud/dns/[domain]/' + btn.dnstype
             method: 'POST'
             parameters:
                 domain: @model.get('record').get('id')
+            params: data
             callback: -> btn.setLoading no
-            success: => @model.get('records').reload()
+            success: => @model.get('records').reload(); win.hide()
             failure: Ext.Msg.error

@@ -31,7 +31,7 @@ class MixedController extends DigitalController
         foreach ($servers as $server) {
             $privates = array_merge($privates, (array)$server->getSnapshots());
 
-            if (!$server->getDeleted()) {
+            if (!$server->isDeleted()) {
                 $backups = $this->get('do.droplet')->getBackups($server->getId());
             }
 

@@ -1,7 +1,9 @@
 Ext.define('Magice.Cloud.view.domain.form.NS', {
   extend: 'Ext.window.Window',
   xtype: 'dns-form-ns',
-  title: 'Add Record NS',
+  bind: {
+    title: 'Add Record NS - {record.name}'
+  },
   width: 400,
   modelValidation: true,
   modal: true,

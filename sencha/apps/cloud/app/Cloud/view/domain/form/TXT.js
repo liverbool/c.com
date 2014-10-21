@@ -1,7 +1,9 @@
 Ext.define('Magice.Cloud.view.domain.form.TXT', {
   extend: 'Ext.window.Window',
   xtype: 'dns-form-txt',
-  title: 'Add Record TXT',
+  bind: {
+    title: 'Add Record TXT - {record.name}'
+  },
   width: 400,
   modelValidation: true,
   modal: true,

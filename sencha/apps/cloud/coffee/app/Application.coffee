@@ -4,7 +4,10 @@
  details.
 ###
 MAGICE_URL = 'http://c.com/web';
+
 sprintf = _.string.sprintf
+vsprintf = _.string.vsprintf
+endsWith = _.string.endsWith
 
 Ext.define 'Magice.Application',
     extend: 'Ext.app.Application'
@@ -51,7 +54,7 @@ Ext.define 'Magice.Application',
 
 # Ajax Global
 # TODO: move to extend
-Ext.humanize =
+humanize =
     text: (v) -> _.string.humanize v
     duration: (v) -> if v then moment.duration(v).humanize() + ' ago' else ''
     date: (v, format) -> if v then moment(v).format 'll' else ''

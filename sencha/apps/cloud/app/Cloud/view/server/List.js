@@ -27,7 +27,7 @@ Ext.define('Magice.Cloud.view.server.List', {
     }, {
       text: 'Created',
       dataIndex: 'createdAt',
-      renderer: Ext.humanize.date
+      renderer: humanize.date
     }, {
       width: 150,
       text: 'IP Address',
@@ -51,7 +51,7 @@ Ext.define('Magice.Cloud.view.server.List', {
       text: 'Memory',
       dataIndex: 'memory',
       renderer: function(v) {
-        return Ext.humanize.format(v, '0b', 'mb');
+        return humanize.format(v, '0b', 'mb');
       }
     }, {
       text: 'SSD Disk',
@@ -75,7 +75,7 @@ Ext.define('Magice.Cloud.view.server.List', {
     }, {
       text: 'Status',
       dataIndex: 'status',
-      renderer: Ext.humanize.text
+      renderer: humanize.text
     }
   ]
 });

@@ -58,12 +58,12 @@ Ext.define 'Magice.Cloud.view.server.ListBackups',
                     hidden: yes
                     text: 'Created At'
                     dataIndex: 'createdAt'
-                    renderer: Ext.humanize.datetime
+                    renderer: humanize.datetime
                 }
                 {
                     text: 'Created'
                     dataIndex: 'createdAt'
-                    renderer: Ext.humanize.duration
+                    renderer: humanize.duration
                 }
             ]
 

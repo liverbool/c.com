@@ -1,7 +1,9 @@
 Ext.define('Magice.Cloud.view.domain.form.MX', {
   extend: 'Ext.window.Window',
   xtype: 'dns-form-mx',
-  title: 'Add Record MX',
+  bind: {
+    title: 'Add Record MX - {record.name}'
+  },
   width: 400,
   modelValidation: true,
   modal: true,
@@ -24,7 +26,9 @@ Ext.define('Magice.Cloud.view.domain.form.MX', {
         name: 'priority',
         xtype: 'numberfield',
         fieldLabel: 'Priority',
-        bind: '{dns.priority}'
+        bind: '{dns.priority}',
+        minValue: 0,
+        maxValue: 65535
       }
     ]
   },

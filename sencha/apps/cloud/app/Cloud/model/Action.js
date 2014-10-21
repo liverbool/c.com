@@ -25,7 +25,7 @@ Ext.define('Magice.Cloud.model.Action', {
     }, {
       name: 'duration',
       convert: function(v, r) {
-        return Ext.humanize.diff(r.get('startedAt'), r.get('completedAt'));
+        return humanize.diff(r.get('startedAt'), r.get('completedAt'));
       }
     }
   ]

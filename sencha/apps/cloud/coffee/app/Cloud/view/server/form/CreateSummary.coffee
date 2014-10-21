@@ -47,7 +47,7 @@ Ext.define 'Magice.Cloud.view.server.form.CreateSummary',
                     @locale.emptyFeature.message
                 '</div>'
             '</tpl>'
-            format: (v) -> Ext.humanize.format v, '0b', 'mb'
+            format: (v) -> humanize.format v, '0b', 'mb'
         ]
 
         @callParent arguments

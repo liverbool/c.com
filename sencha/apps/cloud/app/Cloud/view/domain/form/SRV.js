@@ -1,7 +1,9 @@
 Ext.define('Magice.Cloud.view.domain.form.SRV', {
   extend: 'Ext.window.Window',
   xtype: 'dns-form-srv',
-  title: 'Add Record SRV',
+  bind: {
+    title: 'Add Record SRV - {record.name}'
+  },
   width: 400,
   modelValidation: true,
   modal: true,

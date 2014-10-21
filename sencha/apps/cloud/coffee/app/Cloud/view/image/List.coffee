@@ -53,13 +53,13 @@ Ext.define 'Magice.Cloud.view.image.List',
             {
                 text: 'Type' #locale
                 dataIndex: 'type'
-                renderer: Ext.humanize.text
+                renderer: humanize.text
             }
             {
                 flex: 1
                 text: 'created' #locale
                 dataIndex: 'createdAt'
-                renderer: Ext.humanize.datetime
+                renderer: humanize.datetime
             }
         ]
 
